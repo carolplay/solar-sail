@@ -2,6 +2,8 @@
 
 This note tracks how the implementation maps to `demo-001-solar-infrastructure-viewer.md`.
 
+For explicit out-of-spec choices, known gaps, and manual test feedback, see `docs/demo-001-spec-delta-and-test-feedback.md`.
+
 ## Implemented In This Pass
 
 - Added `npm run build` and `npm run preview` scripts through plain Node scripts.
