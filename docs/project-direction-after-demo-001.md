@@ -4,6 +4,14 @@ Target Version: Roadmap after Demo 001
 
 This note captures the design direction from the post-Demo 000 / Demo 001 brainstorm. It is a north-star document, not an implementation checklist.
 
+## Process Note
+
+Future planning work should default to proposals before specs.
+
+Use proposals for brainstorm output, research synthesis, option analysis, and version direction. Convert a proposal into a spec only after the implementation cut is clear, weak assumptions have been researched or explicitly deferred, and success criteria are testable.
+
+See `docs/proposal-workflow.md`.
+
 ## Core Thesis
 
 The project is not about simulating space as scenery. It is about simulating how physical constraints shape civilization.
@@ -193,7 +201,7 @@ Primary ideas:
 
 ### Demo 003: Network Metrics / Infrastructure Potential
 
-Goal: begin explaining why some places naturally become ports, depots, towns, or gateway settlements.
+Goal: begin explaining why some places naturally become ports, depots, towns, or gateway settlements, including the first economic pressures that make infrastructure valuable.
 
 Primary ideas:
 
@@ -205,8 +213,24 @@ Primary ideas:
 - depot value
 - gateway centrality
 - settlement potential
+- cargo demand
+- passenger demand
+- maintenance burden
+- capital cost
+- operating cost
+- route revenue potential
+- risk premium
 
 Demo 003 should not yet be a full tycoon game. It should make the system able to explain why Phobos, Deimos, Ceres, LEO, and Lagrange regions matter differently.
+
+Demo 003 should avoid a simple compare/ranking mode. Infrastructure decisions are contextual and should not be reduced to "A is better than B." The useful model is scenario pressure:
+
+```text
+Given this demand, cost, risk, route window, and infrastructure state,
+which nodes become more valuable?
+```
+
+The interface should show tradeoffs and causal pressure rather than absolute winners.
 
 ## Important Infrastructure Nodes
 
