@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Solar Network Viewer</title>
+    <link rel="stylesheet" href="styles.css?v=5">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="viewer" aria-label="Solar network visualization">
+        <canvas id="solarCanvas"></canvas>
+        <div class="hud top-left">
+          <div class="kicker">Demo 000</div>
+          <h1>Solar Network Viewer</h1>
+          <div class="date-row">
+            <span id="simDate">--</span>
+            <span id="statusPill" class="status-pill">Running</span>
+          </div>
+        </div>
+
+        <div class="hud controls" aria-label="Simulation controls">
+          <div class="control-group" aria-label="Simulation speed">
+            <button class="speed-button active" data-speed="1" type="button">1x</button>
+            <button class="speed-button" data-speed="10" type="button">10x</button>
+            <button class="speed-button" data-speed="100" type="button">100x</button>
+            <button class="speed-button" data-speed="1000" type="button">1000x</button>
+          </div>
+          <button id="pauseButton" class="icon-button" type="button" title="Pause simulation" aria-label="Pause simulation">
+            <span id="pauseIcon">||</span>
+          </button>
+          <button id="zoomOutButton" class="icon-button" type="button" title="Zoom out" aria-label="Zoom out">-</button>
+          <button id="zoomInButton" class="icon-button" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+          <label class="toggle">
+            <input id="orbitToggle" type="checkbox" checked>
+            <span>Orbits</span>
+          </label>
+        </div>
+
+        <aside class="hud inspector" aria-live="polite">
+          <div class="panel-title">Inspection</div>
+          <h2 id="inspectName">Select an object</h2>
+          <p id="inspectRoute">Click a planet, station point, cycler, or shuttle to inspect its route.</p>
+          <dl>
+            <div>
+              <dt>Next arrival</dt>
+              <dd id="inspectArrival">--</dd>
+            </div>
+            <div>
+              <dt>ETA</dt>
+              <dd id="inspectEta">--</dd>
+            </div>
+          </dl>
+          <div class="schedule">
+            <div class="panel-title">Shuttle Schedule</div>
+            <div id="scheduleList" class="schedule-list"></div>
+          </div>
+        </aside>
+
+        <div class="legend" aria-label="Object legend">
+          <span><i class="legend-planet"></i> Worlds</span>
+          <span><i class="legend-cycler"></i> Cycler</span>
+          <span><i class="legend-shuttle"></i> Shuttle transfers</span>
+          <span><i class="legend-point"></i> Lagrange points</span>
+        </div>
+      </section>
+    </main>
+    <script src="app.js?v=6"></script>
+  </body>
+</html>
