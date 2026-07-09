@@ -1,5 +1,7 @@
 # Demo 001 — Solar Infrastructure Viewer
 
+Target Version: Demo 001
+
 ## Goal
 
 Upgrade Demo 000 from a stylized orbit animation into a more physically grounded solar-system infrastructure visualizer.

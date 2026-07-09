@@ -1,5 +1,7 @@
 # Physics / Simulation Model Research
 
+Target Version: Demo 001, with Demo 002 upgrade path
+
 Demo 001 is a browser visualization prototype, not a spacecraft navigation tool. The implementation favors credible intuition, stable performance, and clear documentation over high-precision astrodynamics.
 
 ## Options Considered

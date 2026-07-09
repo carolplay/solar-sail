@@ -1,5 +1,7 @@
 # Project Direction After Demo 001
 
+Target Version: Roadmap after Demo 001
+
 This note captures the design direction from the post-Demo 000 / Demo 001 brainstorm. It is a north-star document, not an implementation checklist.
 
 ## Core Thesis
@@ -151,6 +153,38 @@ Transfer Manifold View
 ```
 
 The view can mention invariant manifolds and the Interplanetary Transport Network as inspiration, but Demo 001 does not calculate real manifolds.
+
+### Demo 002: Physics Contract and Route Atlas
+
+Goal: make the viewer honest about its physics and begin turning it into a reference atlas for routes, nodes, energy regimes, and infrastructure meaning.
+
+Primary ideas:
+
+- define which views are ephemeris-like, schematic, conceptual, or research placeholders
+- tie planetary positions to a documented epoch or generated ephemeris dataset
+- continue cycler research and stop treating the current stylized ellipse as physically sufficient
+- add more logistics nodes and optional orbit layers
+- add toggles for infrastructure nodes, Lagrange regions, cycler lines, low-energy routes, probe orbits, and science missions
+- add Wikipedia-style explanatory entries for key concepts
+- research real 3D gravity-well and low-energy-route visualizations
+- improve mobile so panels no longer dominate the main canvas
+
+### Demo 003: Network Metrics / Infrastructure Potential
+
+Goal: begin explaining why some places naturally become ports, depots, towns, or gateway settlements.
+
+Primary ideas:
+
+- traffic potential
+- route cost
+- travel time
+- launch window frequency
+- route reliability
+- depot value
+- gateway centrality
+- settlement potential
+
+Demo 003 should not yet be a full tycoon game. It should make the system able to explain why Phobos, Deimos, Ceres, LEO, and Lagrange regions matter differently.
 
 ## Important Infrastructure Nodes
 

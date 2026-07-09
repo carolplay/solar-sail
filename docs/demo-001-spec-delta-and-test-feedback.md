@@ -1,5 +1,7 @@
 # Demo 001 Spec Delta and Test Feedback
 
+Target Version: Demo 001
+
 This note records choices that are outside, narrower than, or more specific than `docs/demo-001-solar-infrastructure-viewer.md`, plus feedback discovered while manually testing the prototype.
 
 ## Out-of-Spec or Scope-Adjusted Choices

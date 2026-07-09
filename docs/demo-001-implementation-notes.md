@@ -1,5 +1,7 @@
 # Demo 001 Implementation Notes
 
+Target Version: Demo 001
+
 This note tracks how the implementation maps to `docs/demo-001-solar-infrastructure-viewer.md`.
 
 For explicit out-of-spec choices, known gaps, and manual test feedback, see `docs/demo-001-spec-delta-and-test-feedback.md`.

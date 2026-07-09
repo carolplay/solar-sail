@@ -1,5 +1,7 @@
 # Demo 000 - Solar Network Viewer
 
+Target Version: Demo 000
+
 ## Goal
 
 Build a visual sandbox to develop intuition for a future sub-light civilization.
