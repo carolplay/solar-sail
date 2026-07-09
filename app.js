@@ -922,7 +922,7 @@ function drawTransferView() {
   state.hitTargets = [];
   state.labelBoxes = [];
   drawSpace();
-  drawConceptTitle("Transfer Manifold View", `Snapshot ${formatDate(state.conceptSnapshotDay)} | approximate tube sketch; better manifold engine needed.`);
+  drawConceptTitle("Low-Energy Routes View", `Snapshot ${formatDate(state.conceptSnapshotDay)} | approximate corridor sketch; better manifold engine needed.`);
   drawManifoldTubes();
   const nodes = [
     { id: "sun-earth-l1", name: "Sun-Earth L1/L2", x: -0.82, y: -0.18, z: 0.02, color: "#ffa96f", role: "halo gateway" },

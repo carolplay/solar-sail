@@ -76,13 +76,13 @@ The implemented model uses lightweight browser-side Keplerian approximation for 
 - Earth-Moon L1 is shown as a local Earth-system gateway in Earth Gateway scale.
 - Phobos, Deimos, LEO, and local transfer nodes are symbolic offsets that preserve infrastructure meaning rather than physical scale.
 
-Gravity Well View and Transfer Manifold View are timestamped conceptual snapshots. They can be rotated and zoomed in the browser, but they do not compute delta-v, invariant manifolds, or optimized transfers.
+Gravity Well View and Low-Energy Routes View are timestamped conceptual snapshots. They can be rotated and zoomed in the browser, but they do not compute delta-v, invariant manifolds, or optimized transfers.
 
 ## Low-Energy Transfer Visualization Reference
 
 The Demo 001 conceptual views now follow the visual language in Luke Chu's low-energy transfer explainer more closely: pseudo-3D effective-potential terrain, saddle regions around Lagrange points, halo/Lyapunov-style loops, and stable/unstable tube families. The implementation still does not numerically solve the circular restricted three-body problem. It draws symbolic geometry intended to teach the idea of energy terrain and transfer corridors.
 
-The current Transfer Manifold View should be treated as a placeholder. To reach the desired effect, a later version should use a better engine: either a browser-side CR3BP renderer, a precomputed manifold dataset, or offline-generated mesh/tube geometry loaded as static JSON.
+The current Low-Energy Routes View should be treated as a placeholder inspired by transfer-manifold concepts. To reach the desired effect, a later version should use a better engine: either a browser-side CR3BP renderer, a precomputed manifold dataset, or offline-generated mesh/tube geometry loaded as static JSON.
 
 ## Cycler Schedule Note
 

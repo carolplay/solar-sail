@@ -1,6 +1,6 @@
 # Demo 001 Spec Delta and Test Feedback
 
-This note records choices that are outside, narrower than, or more specific than `demo-001-solar-infrastructure-viewer.md`, plus feedback discovered while manually testing the prototype.
+This note records choices that are outside, narrower than, or more specific than `docs/demo-001-solar-infrastructure-viewer.md`, plus feedback discovered while manually testing the prototype.
 
 ## Out-of-Spec or Scope-Adjusted Choices
 
@@ -33,19 +33,19 @@ The original spec lists Earth-Moon L1 and L2. The implementation includes Earth-
 
 ### Scale Modes Only Apply to Orbit View
 
-The original spec says to add scale modes or zoom levels. In this implementation, scale modes apply only to Orbit View. Gravity Well View and Transfer Manifold View are timestamped conceptual snapshots with their own camera controls.
+The original spec says to add scale modes or zoom levels. In this implementation, scale modes apply only to Orbit View. Gravity Well View and Low-Energy Routes View are timestamped conceptual snapshots with their own camera controls.
 
 This avoids confusing combinations such as "Mars Gateway" plus "Gravity Well View", where the static conceptual scene does not actually have subsystem-specific content.
 
 ### Static Views Became Interactive Snapshots
 
-The spec allows Gravity Well View and Transfer Manifold View to be static snapshots. The implementation keeps them conceptually static, but adds timestamp, drag/rotate/zoom, and modified-drag pan controls.
+The spec allows Gravity Well View and Low-Energy Routes View to be static snapshots. The implementation keeps them conceptually static, but adds timestamp, drag/rotate/zoom, and modified-drag pan controls.
 
 They are not time-evolving simulations.
 
-### Transfer Manifold View Is a Placeholder
+### Low-Energy Routes View Is a Placeholder
 
-The Transfer Manifold View still does not provide the desired visual effect. It is only a symbolic pseudo-3D sketch of halo loops and tube-like paths.
+The Low-Energy Routes View still does not provide the desired visual effect. It is only a symbolic pseudo-3D sketch of halo loops and tube-like paths, inspired by transfer-manifold and Interplanetary Transport Network concepts.
 
 To satisfy the intended visual target, a later version likely needs one of:
 
@@ -72,7 +72,7 @@ The first conceptual views placed title text partly underneath the left HUD. Con
 
 ### Legend Collision in Concept Views
 
-The normal orbit legend competed with the conceptual-view explanatory legend. The orbit legend is now hidden in Gravity Well View and Transfer Manifold View.
+The normal orbit legend competed with the conceptual-view explanatory legend. The orbit legend is now hidden in Gravity Well View and Low-Energy Routes View.
 
 ### Mobile Layout Collision
 
@@ -110,7 +110,7 @@ http://127.0.0.1:4173
 ## Known Follow-Ups
 
 - Add the GitHub Pages workflow once the repository target is chosen.
-- Replace the Transfer Manifold placeholder with a real or precomputed manifold visualization.
+- Replace the Low-Energy Routes placeholder with a real or precomputed manifold-inspired visualization.
 - Consider a real 3D rendering layer for the concept views.
 - Add automated screenshot tests for desktop and mobile breakpoints.
 - Split the large `app.js` into modules before adding more simulation behavior.

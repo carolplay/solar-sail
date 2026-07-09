@@ -1,16 +1,16 @@
 # Demo 001 Implementation Notes
 
-This note tracks how the implementation maps to `demo-001-solar-infrastructure-viewer.md`.
+This note tracks how the implementation maps to `docs/demo-001-solar-infrastructure-viewer.md`.
 
 For explicit out-of-spec choices, known gaps, and manual test feedback, see `docs/demo-001-spec-delta-and-test-feedback.md`.
 
 ## Implemented In This Pass
 
 - Added `npm run build` and `npm run preview` scripts through plain Node scripts.
-- Added Orbit View, Gravity Well View, and Transfer Manifold View controls.
+- Added Orbit View, Gravity Well View, and Low-Energy Routes View controls.
 - Kept Orbit View animated continuously.
-- Added pseudo-3D conceptual rendering for Gravity Well View and Transfer Manifold View.
-- Added snapshot timestamps for Gravity Well View and Transfer Manifold View.
+- Added pseudo-3D conceptual rendering for Gravity Well View and Low-Energy Routes View.
+- Added snapshot timestamps for Gravity Well View and Low-Energy Routes View.
 - Added drag/rotate/zoom support for conceptual snapshots. Wheel zooms the pseudo-3D scene; drag rotates; modified drag pans.
 - Added scale modes: Solar System, Inner System, Earth Gateway, Mars Gateway, and Ceres / Belt.
 - Added Mercury and infrastructure nodes for LEO Port, Moon, Earth-Moon L1, Sun-Earth L1/L2/L4/L5, Phobos Port, Deimos Deep Space Port, Mars cycler connection, Ceres, Vesta, and Ceres Drift Hub.
@@ -26,7 +26,7 @@ For explicit out-of-spec choices, known gaps, and manual test feedback, see `doc
 - Local gateway geometry is symbolic at small scales so nodes remain visible and useful.
 - Gravity wells are pseudo-3D qualitative effective-potential terrain, not delta-v charts.
 - Transfer manifolds are pseudo-3D stylized tube families, not computed invariant manifolds.
-- Transfer Manifold View still does not provide the desired full visual effect. A better engine is needed for real circular restricted three-body problem surfaces, halo/Lyapunov orbit families, and stable/unstable manifold tubes.
+- Low-Energy Routes View still does not provide the desired full visual effect. A better engine is needed for real circular restricted three-body problem surfaces, halo/Lyapunov orbit families, and stable/unstable manifold tubes.
 - Deployment workflow is not added yet because GitHub Pages upload/account setup is deferred.
 
 ## Spec Decisions Captured

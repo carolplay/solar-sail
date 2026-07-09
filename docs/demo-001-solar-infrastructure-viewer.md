@@ -10,7 +10,7 @@ This is still **not gameplay**. It is a visualization/research prototype for bui
 - gravity wells
 - transfer windows
 - cycler routes
-- low-energy transfer corridors
+- low-energy route corridors
 - logistics nodes such as LEO, Lagrange points, Phobos, Deimos, Ceres, and Sun–Earth Lagrange points
 
 The core question:
@@ -27,7 +27,7 @@ Important simplification:
 
 - **Orbit View** should update continuously.
 - **Gravity Well View** may be rendered as a static snapshot when entered.
-- **Transfer Manifold View** may also be rendered as a static conceptual snapshot when entered.
+- **Low-Energy Routes View** may also be rendered as a static conceptual snapshot when entered.
 - Gravity wells and transfer manifolds are allowed to be simplified / approximate / illustrative.
 
 The aim is to communicate useful intuition, not to calculate perfect trajectories.
@@ -102,7 +102,7 @@ The deployed version should be accessible outside localhost.
 Add a view mode switcher:
 
 ```text
-[Orbit View] [Gravity Well View] [Transfer Manifold View]
+[Orbit View] [Gravity Well View] [Low-Energy Routes View]
 ```
 
 ### 3.1 Orbit View
@@ -159,7 +159,7 @@ This view should emphasize:
 
 It does not need to be physically exact.
 
-### 3.3 Transfer Manifold View
+### 3.3 Low-Energy Routes View
 
 A simplified “space ocean current” view.
 
@@ -178,6 +178,14 @@ Show:
 - possible connection between Earth system, Mars system, and Ceres
 
 It does not need true manifold computation in Demo 001.
+
+Terminology note:
+
+```text
+Low-Energy Routes View
+```
+
+is the user-facing name. It can be documented as inspired by invariant manifolds and the Interplanetary Transport Network, but Demo 001 should not imply that it computes real manifold geometry.
 
 ---
 
@@ -406,7 +414,7 @@ Infrastructure potential: High
 
 ## 9. Static Snapshot Rule for Complex Views
 
-Gravity Well View and Transfer Manifold View may be expensive or conceptually complex.
+Gravity Well View and Low-Energy Routes View may be expensive or conceptually complex.
 
 For Demo 001:
 
@@ -445,7 +453,7 @@ Demo 001 succeeds if:
 
 1. Planetary motion feels more physically credible than Demo 000.
 2. The demo is publicly accessible online.
-3. Users can switch between Orbit, Gravity Well, and Transfer Manifold views.
+3. Users can switch between Orbit, Gravity Well, and Low-Energy Routes views.
 4. Users can understand why LEO, Lagrange points, Phobos, Deimos, and Ceres matter.
 5. Cycler and shuttle routes feel like infrastructure, not just moving icons.
 6. Different scale levels make gateway nodes easier to understand.
@@ -464,7 +472,7 @@ Realistic enough planetary motion
 +
 Conceptual gravity-well view
 +
-Conceptual transfer-manifold view
+Conceptual low-energy-routes view
 +
 Clear infrastructure-node visual language
 ```

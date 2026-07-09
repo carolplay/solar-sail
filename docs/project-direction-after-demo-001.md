@@ -1,0 +1,306 @@
+# Project Direction After Demo 001
+
+This note captures the design direction from the post-Demo 000 / Demo 001 brainstorm. It is a north-star document, not an implementation checklist.
+
+## Core Thesis
+
+The project is not about simulating space as scenery. It is about simulating how physical constraints shape civilization.
+
+Three working principles:
+
+- Solar-system settlement is not the aviation age. It is closer to the Age of Sail.
+- The player should not build cities directly. The player should build the routes, ports, depots, and gateways that let cities emerge.
+- Civilization is not made of planets. It is made of settlements, gateways, infrastructure nodes, routes, warehouses, refueling points, orbital towns, and mobile cities.
+
+## Origin
+
+The earliest idea came from observing large alliance-driven SLG games. Their monetization incentives are not the point, but their social structure is useful:
+
+- limited social circles
+- alliances
+- local identity
+- server separation
+- cross-server contact
+- history, memory, betrayal, and cooperation
+
+That mapped naturally onto a sub-light civilization model:
+
+- one server resembles one colony or settlement
+- cross-server contact resembles interstellar contact
+- social scale is local rather than globally synchronized
+- a civilization can be large while each person lives inside a limited social horizon
+
+The first project phrase was:
+
+```text
+Sub-light multi-planet civilization
+```
+
+The deeper design goal was:
+
+```text
+Do not simulate space itself. Simulate how space shapes civilization.
+```
+
+## Pivot: From MMO To Infrastructure
+
+The MMO civilization version is too large to cold-start. The more testable first step is a solar-system transportation infrastructure simulator.
+
+Instead of:
+
+```text
+Build cities -> then build roads
+```
+
+the project should test:
+
+```text
+Build routes -> settlements naturally grow
+```
+
+This separates the project from a normal space empire game. It is not:
+
+```text
+Build a space empire.
+```
+
+It is:
+
+```text
+Build the infrastructure that allows a civilization to emerge.
+```
+
+## Age Of Sail Metaphor
+
+Near-future solar-system expansion is not like flying from A to B. It is shaped by launch windows, transfer energy, gravity wells, Lagrange regions, depots, ports, and recurring routes.
+
+Useful analogies:
+
+| Age of Sail | Solar-system infrastructure |
+| --- | --- |
+| Trade winds | Hohmann windows |
+| Ocean currents | Low-energy transfers / Interplanetary Transport Network |
+| Ports | LEO, Phobos, Ceres |
+| Supply stations | Fuel depots |
+| Packet ships | Cyclers |
+| Straits and sea lanes | Lagrange gateways |
+| Shipping companies | Space logistics authorities / companies |
+
+The visual target is a solar system that feels like an ocean of gravity wells, energy terrain, ports, currents, and routes.
+
+## Settlement Network
+
+The unit of civilization is not "planet server." The better unit is:
+
+```text
+Settlement / Gateway / Infrastructure Node
+```
+
+Candidate node types include:
+
+- Earth
+- LEO Port
+- Moon
+- Earth-Moon L1/L2
+- Earth L4/L5
+- Sun-Earth L1/L2/L4/L5
+- Mars
+- Phobos Port
+- Deimos Deep Space Port
+- Ceres
+- Cycler mobile settlement
+- Callisto Gateway
+- asteroid mining hubs
+
+A star system can have only a few major planets and still support many meaningful social and logistics nodes.
+
+## Demo Roadmap
+
+### Demo 000: Solar Network Viewer
+
+Goal: test whether a living solar-system transportation network is visually compelling.
+
+Status: completed as a first pass.
+
+### Demo 001: Solar Infrastructure Viewer
+
+Goal: make the network more physically credible and easier to inspect across multiple conceptual views.
+
+Primary ideas:
+
+- more credible planetary motion
+- public deployment
+- Orbit View
+- Gravity Well View
+- Low-Energy Routes View
+- scale modes for Solar System, Inner System, Earth Gateway, Mars Gateway, and Ceres / Asteroid Belt
+- NASA-inspired scientific visualization style
+- infrastructure nodes such as LEO, Lagrange points, Phobos, Deimos, and Ceres
+- route classes such as Cycler Line, Shuttle Transfer, Fast Transfer, Low-Energy Transfer, and Planned Route
+
+Terminology:
+
+```text
+Low-Energy Routes View
+```
+
+is preferred over:
+
+```text
+Transfer Manifold View
+```
+
+The view can mention invariant manifolds and the Interplanetary Transport Network as inspiration, but Demo 001 does not calculate real manifolds.
+
+## Important Infrastructure Nodes
+
+### LEO
+
+Earth gravity-well exit and first major port.
+
+### Earth-Moon L1/L2
+
+Earth-Moon logistics, lunar-resource transfer, and deep-space relay points.
+
+### Sun-Earth L1/L2
+
+Solar observation, deep-space telescopes, communications, navigation, and early warning.
+
+### Earth L4/L5 and Sun-Earth L4/L5
+
+Stable regions with long-term industrial, storage, data-center, and settlement potential.
+
+### Phobos
+
+The strongest Mars-port candidate because it is close to Mars, low gravity, and useful for repair, refueling, and surface transfer.
+
+### Deimos
+
+A better outer Mars deep-space port candidate.
+
+### Ceres
+
+A volatile and asteroid-belt resource node. It should not be declared the capital of the belt by fiat; its importance should emerge from network centrality.
+
+### Callisto
+
+A low-radiation gateway candidate for the Jupiter system.
+
+### Low-Energy Transfers / ITN
+
+The solar-system equivalent of slow, cheap ocean currents for non-urgent logistics.
+
+## Possible Game Positions
+
+Potential genres:
+
+- MMO civilization simulation
+- persistent CLI civilization server
+- idle space logistics tycoon
+- network builder / infrastructure simulator
+
+The clearest current position is:
+
+```text
+Solar System Infrastructure Builder
+```
+
+or:
+
+```text
+A network builder for a living civilization
+```
+
+The core question is not:
+
+```text
+How do I move cargo from A to B?
+```
+
+It is:
+
+```text
+Which routes, ports, and infrastructure cause civilization to grow?
+```
+
+## Post-Demo 001 Progression
+
+### Stage 1: Visual Credibility
+
+Make the solar system look like a real transportation and energy network.
+
+Demo 001 belongs here.
+
+### Stage 2: Network Metrics
+
+Add network properties before adding economy:
+
+- traffic volume
+- connection count
+- route frequency
+- route cost
+- route reliability
+- infrastructure potential
+
+The system should be able to explain why Phobos can matter more than the Mars surface as a port, why Ceres may or may not become a major hub, and why L4/L5 regions have long-term value.
+
+### Stage 3: Emergent Settlements
+
+Do not add a "build city" button.
+
+The player builds:
+
+- dock
+- fuel depot
+- cycler line
+- relay
+- warehouse
+- maintenance yard
+
+The system grows settlements from network centrality, flow, supply, safety, energy, and reliability:
+
+```text
+Outpost -> Port -> Town -> City -> Orbital Metropolis
+```
+
+### Stage 4: Idle / Tycoon Layer
+
+Add operational pressure:
+
+- cargo demand
+- passenger demand
+- route revenue
+- maintenance cost
+- schedules
+- congestion
+- accidents
+- ticket prices
+- shipping companies or transport authorities
+
+The player manages infrastructure, not individual spacecraft.
+
+### Stage 5: Civilization Layer
+
+Return to the original sub-light civilization idea by adding:
+
+- population migration
+- local identity
+- political organization
+- AI governors
+- asynchronous communication
+- historical logs
+- multi-settlement societies
+
+## Design North Star
+
+```text
+Solar-system settlement is the Age of Sail, not the aviation age.
+```
+
+```text
+Players build the routes and ports that let cities naturally grow.
+```
+
+```text
+The project simulates how physical constraints shape civilization.
+```
