@@ -169,6 +169,28 @@ Primary ideas:
 - research real 3D gravity-well and low-energy-route visualizations
 - improve mobile so panels no longer dominate the main canvas
 
+Execution cut:
+
+- Demo 002 is the trust and atlas pass, not the full physics-engine pass.
+- It should ship model labels, documented approximations, layer toggles, explanation entries, cycler honesty, and mobile layout improvements.
+- It may use documented Keplerian elements tied to an epoch instead of a full ephemeris pipeline.
+- 3D gravity wells, CR3BP manifold tubes, SPICE/Skyfield/JPL data pipelines, and sampled cycler trajectories should be researched but not required for Demo 002 completion.
+
+### Demo 002.5: 3D Physics and Data Pipeline Decision
+
+Goal: turn the Demo 002 research findings into a concrete technical direction for higher-credibility physics views and data generation.
+
+Primary ideas:
+
+- decide whether Three.js is needed for concept views only or for a broader 3D scene architecture
+- prototype a 3D gravity-well surface if research supports it
+- prototype simplified low-energy route tubes inspired by invariant manifolds
+- generate compact offline ephemeris JSON for browser interpolation
+- research sampled Earth-Mars cycler paths beyond the stylized ellipse
+- evaluate CR3BP reference implementations and precomputed static geometry
+- expand probe and science-mission layers after the route-atlas layer system stabilizes
+- keep all 3D and advanced physics claims clearly labeled unless they are backed by real data
+
 ### Demo 003: Network Metrics / Infrastructure Potential
 
 Goal: begin explaining why some places naturally become ports, depots, towns, or gateway settlements.

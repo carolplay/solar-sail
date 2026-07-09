@@ -512,6 +512,52 @@ Demo 002 is a foundation pass: physics credibility, route meaning, explainabilit
 
 ---
 
+## Demo 002 Delivery Cut
+
+Demo 002 should prioritize trust-building over deep simulation.
+
+The executable Demo 002 scope is:
+
+- explicit model labels for every major view and selected object
+- documented orbital epoch, model time span, and approximation limits
+- route-atlas data structures for nodes, route families, layers, and explanation entries
+- layer toggles for the most important infrastructure and route classes
+- a cycler presentation that clearly separates cycler orbit, taxi transfer, and flyby window
+- Wikipedia-style explanation entries for the core nodes, routes, and concepts
+- mobile layout changes that keep the canvas primary, including a bottom-sheet inspector
+- a 3D physics-view research note that recommends the next technical path
+
+Demo 002 should not require:
+
+- a production ephemeris pipeline
+- JPL Horizons, Skyfield, or SPICE integration
+- real CR3BP manifold generation
+- real mission optimization
+- Three.js implementation of gravity wells or manifold tubes
+- complete probe and science-mission coverage
+- outer-system logistics visualization beyond research placeholders
+
+If planetary positions are not generated from an ephemeris table, Demo 002 may use documented Keplerian elements tied to a clear epoch. If concept views remain 2D or pseudo-3D, they must be labeled as conceptual or research placeholders.
+
+## Demo 002.5 Deferrals
+
+Demo 002.5 is the follow-up pass for items that need research, data generation, or a larger rendering architecture.
+
+Candidate Demo 002.5 work:
+
+- decide whether to add Three.js for concept views only or create a fuller 3D scene architecture
+- prototype an interactive 3D gravity-well surface
+- prototype simplified 3D low-energy route tubes inspired by invariant manifolds
+- generate compact offline ephemeris JSON for browser interpolation
+- research sampled Earth-Mars cycler paths beyond the current stylized ellipse
+- evaluate CR3BP reference implementations and precomputed static geometry
+- expand probe/science mission layers after the base layer system is stable
+- revisit mobile interaction if 3D views become part of the product experience
+
+Demo 002.5 should still avoid claiming mission-grade astrodynamics unless the data and model support that claim.
+
+---
+
 ## Success Criteria
 
 Demo 002 succeeds if:

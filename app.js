@@ -11,12 +11,23 @@ const inspectName = document.getElementById("inspectName");
 const inspectRoute = document.getElementById("inspectRoute");
 const inspectDetails = document.getElementById("inspectDetails");
 const scheduleList = document.getElementById("scheduleList");
+const modelBadge = document.getElementById("modelBadge");
+const modelNote = document.getElementById("modelNote");
+const articleButton = document.getElementById("articleButton");
+const articleDrawer = document.getElementById("articleDrawer");
+const articleTitle = document.getElementById("articleTitle");
+const articleBody = document.getElementById("articleBody");
+const articleClose = document.getElementById("articleClose");
 const speedButtons = Array.from(document.querySelectorAll(".speed-button"));
 const modeButtons = Array.from(document.querySelectorAll(".mode-button"));
 const scaleButtons = Array.from(document.querySelectorAll(".scale-button"));
+const layerToggles = Array.from(document.querySelectorAll("[data-layer]"));
+const sheetButtons = Array.from(document.querySelectorAll("[data-sheet-state]"));
 
 const DAY_MS = 86400000;
-const startDate = new Date(Date.UTC(2187, 0, 1, 12));
+const modelEpochLabel = "2026-07-09";
+const modelTimeSpan = "Approximate over decades near the documented epoch; not mission-grade.";
+const startDate = new Date(Date.UTC(2026, 6, 9, 12));
 const tilt = 0.47;
 
 const state = {
@@ -24,6 +35,17 @@ const state = {
   speed: 10,
   paused: false,
   showOrbits: true,
+  layers: {
+    planets: true,
+    infrastructure: true,
+    lagrange: true,
+    cyclers: true,
+    fastTransfers: true,
+    lowEnergy: true,
+    probeOrbits: true,
+    labels: true
+  },
+  activeArticleId: "orbit-view",
   viewMode: "orbit",
   scaleMode: "solar",
   selectedId: null,
@@ -53,6 +75,21 @@ const state = {
   dragPanStart: { x: 0, y: 0 },
   hitTargets: [],
   labelBoxes: []
+};
+
+const viewModels = {
+  orbit: {
+    label: "Ephemeris-like / approximate",
+    note: `Epoch ${modelEpochLabel}. Keplerian browser model; spacecraft routes are schematic.`
+  },
+  gravity: {
+    label: "Conceptual / research placeholder",
+    note: "Pseudo-3D teaching surface; not a computed delta-v or potential-energy model."
+  },
+  manifold: {
+    label: "Conceptual / research placeholder",
+    note: "Manifold-inspired route sketch; CR3BP tubes are not numerically solved."
+  }
 };
 
 const scaleModes = {
@@ -427,6 +464,143 @@ const shuttleRoutes = [
   }
 ];
 
+const probeOrbits = [
+  {
+    id: "parker-style-probe",
+    name: "Solar Dive Probe",
+    type: "Educational Probe Orbit",
+    parent: "Inner Solar System",
+    role: "Shows a high-energy solar science dive, inspired by close solar probe trajectories",
+    infrastructure: "Science example",
+    semiMajor: 0.62,
+    eccentricity: 0.74,
+    period: 110,
+    radius: 3.4,
+    color: "#ff9f6f",
+    phase: 1.1,
+    argPeri: 0.35
+  },
+  {
+    id: "jwst-style-l2",
+    name: "L2 Observatory Region",
+    type: "Educational Science Mission",
+    parent: "Sun-Earth L2",
+    role: "Shows why Sun-Earth L2 is useful for observatories and thermal stability",
+    infrastructure: "Science example",
+    radius: 3.8,
+    color: "#b9a7ff",
+    position: () => offsetFrom("sun-earth-l2", 0.0022, state.simDays * 0.045)
+  }
+];
+
+const explanationEntries = {
+  "orbit-view": {
+    title: "Orbit View",
+    definition: "Orbit View is the main map of worlds, ports, gateways, and scheduled route classes.",
+    matters: "It keeps the infrastructure readable in a solar-system frame, so users can see why ports and corridors form around planets, Lagrange regions, and belt hubs.",
+    models: `Planetary positions use a documented Keplerian approximation from epoch ${modelEpochLabel}.`,
+    simplifies: `The model is ${modelTimeSpan} Spacecraft transfers are schematic and not optimized trajectories.`
+  },
+  "gravity-view": {
+    title: "Gravity Well View",
+    definition: "Gravity Well View is a conceptual terrain view of energy cost.",
+    matters: "It explains why leaving Earth is different from crossing empty distance, and why shelves, saddles, and gateways matter for logistics.",
+    models: "The current view models the idea of wells, saddles, and local gateway shelves.",
+    simplifies: "It does not compute true delta-v, patched conics, or a mission-grade potential surface."
+  },
+  "low-energy-routes-view": {
+    title: "Low-Energy Routes View",
+    definition: "Low-Energy Routes View sketches slow corridors inspired by invariant manifolds and the Interplanetary Transport Network.",
+    matters: "It gives the Age of Sail equivalent of currents: useful routes that trade time for lower energy.",
+    models: "The demo shows halo-like loops, saddle gateways, and tube-like route families.",
+    simplifies: "It does not solve the circular restricted three-body problem or generate real stable and unstable manifold tubes."
+  },
+  "leo-port": {
+    title: "LEO Port",
+    definition: "LEO Port represents a low Earth orbit logistics node.",
+    matters: "It is the first major staging point after launch and a natural place for assembly, refueling, and crew transfer.",
+    models: "The demo places it as a schematic node close to Earth.",
+    simplifies: "The displayed distance and orbital motion are exaggerated for readability."
+  },
+  "earth-moon-l1": {
+    title: "Earth-Moon L1",
+    definition: "Earth-Moon L1 is a gateway region between Earth and the Moon.",
+    matters: "It is useful as a staging point for lunar logistics, transfer vehicles, and deep-space routing.",
+    models: "The demo marks it as a local schematic Lagrange gateway.",
+    simplifies: "It does not compute an actual halo orbit or stationkeeping requirement."
+  },
+  "sun-earth-l1": {
+    title: "Sun-Earth L1/L2/L4/L5",
+    definition: "Sun-Earth Lagrange regions are useful solar-system reference zones around Earth orbit.",
+    matters: "L1 supports solar monitoring, L2 supports observatories, and L4/L5 are long-term stable industrial or storage candidates.",
+    models: "The demo places them relative to Earth and the Sun to show their infrastructure role.",
+    simplifies: "The positions are schematic and do not represent exact libration orbits."
+  },
+  "phobos-port": {
+    title: "Phobos Port",
+    definition: "Phobos Port is a Mars-system gateway built around Mars's inner moon.",
+    matters: "Phobos has low gravity and sits close to Mars, making it a strong staging candidate for surface access, maintenance, and refueling.",
+    models: "The demo shows Phobos as a schematic Mars gateway and shuttle endpoint.",
+    simplifies: "Its exact orbital position, transfer cost, and operational constraints are not mission-accurate."
+  },
+  "deimos-port": {
+    title: "Deimos Deep Space Port",
+    definition: "Deimos Deep Space Port is an outer Mars gateway concept.",
+    matters: "It can serve as a calmer staging point for asteroid-belt departures and Mars-system cargo routing.",
+    models: "The demo places it as a schematic high Mars orbit node.",
+    simplifies: "It does not model real Deimos operations or transfer costs."
+  },
+  ceres: {
+    title: "Ceres",
+    definition: "Ceres is the largest body in the asteroid belt and a candidate volatile logistics hub.",
+    matters: "Water and volatiles make it important for refueling, cargo staging, and long-haul belt infrastructure.",
+    models: "The demo shows Ceres as a belt hub with nearby slow cargo routing.",
+    simplifies: "Resource availability, extraction, and economics are not simulated."
+  },
+  cycler: {
+    title: "Cycler",
+    definition: "A cycler is an orbiting habitat or vehicle path that repeatedly encounters two worlds.",
+    matters: "It is scheduled interplanetary infrastructure: the expensive habitat keeps moving while taxis meet it near flybys.",
+    models: "The demo shows a stylized Earth-Mars cycler schedule, flyby windows, and taxi markers.",
+    simplifies: "Real cycler taxis require substantial maneuvering. The short arcs here are timing symbols, not true rendezvous trajectories."
+  },
+  "hohmann-transfer": {
+    title: "Hohmann Transfer",
+    definition: "A Hohmann transfer is a simple two-burn transfer between circular or near-circular orbits.",
+    matters: "It is a useful baseline for explaining fast transfer windows and route energy.",
+    models: "The demo uses fast-transfer route classes as readable infrastructure lanes.",
+    simplifies: "It does not compute burn magnitudes, launch windows, or arrival geometry."
+  },
+  "low-energy-transfer": {
+    title: "Low-Energy Transfer",
+    definition: "A low-energy transfer uses gravitational structure and time to reduce propulsion needs.",
+    matters: "Slow cargo can use these corridors like trade winds, exchanging speed for lower energy cost.",
+    models: "The demo shows manifold-inspired corridors as educational route families.",
+    simplifies: "No real invariant manifold is calculated in Demo 2.0."
+  },
+  "launch-window": {
+    title: "Launch Window",
+    definition: "A launch window is a period when departure geometry makes a route practical.",
+    matters: "Scheduled infrastructure depends on windows: taxis, cyclers, and cargo lanes all need timing.",
+    models: "The demo schedule shows recurring rendezvous and shuttle events.",
+    simplifies: "The windows are simplified timing markers, not optimized mission opportunities."
+  },
+  "fuel-depot": {
+    title: "Fuel Depot",
+    definition: "A fuel depot stores propellant near useful route junctions.",
+    matters: "Depots can turn difficult trips into chained legs and make ports more valuable.",
+    models: "Demo 2.0 treats depots as route-atlas concepts, not simulated inventory.",
+    simplifies: "There is no economy, extraction, or propellant flow model yet."
+  },
+  gateway: {
+    title: "Gateway",
+    definition: "A gateway is a staging location where local, regional, and deep-space routes meet.",
+    matters: "Gateways become useful when they reduce operational friction between surface access, orbit, and interplanetary transfer.",
+    models: "The demo shows gateways as labeled nodes and connection points.",
+    simplifies: "Stationkeeping, construction cost, and traffic demand are not simulated."
+  }
+};
+
 let lastFrame = performance.now();
 
 function resize() {
@@ -582,6 +756,46 @@ function marsMoonAngle(offset) {
 
 function visibleInScale(id) {
   return scaleModes[state.scaleMode].visible.has(id);
+}
+
+function layerEnabled(layer) {
+  return state.layers[layer] !== false;
+}
+
+function nodeLayer(node) {
+  if (node.type?.includes("Lagrange") || node.id.includes("-l1") || node.id.includes("-l2") || node.id.includes("-l4") || node.id.includes("-l5")) {
+    return "lagrange";
+  }
+  return "infrastructure";
+}
+
+function routeLayer(route) {
+  if (route.type === "Cycler Line" || route.from === "cycler" || route.to === "cycler") return "cyclers";
+  if (route.type === "Fast Transfer") return "fastTransfers";
+  if (route.type === "Low-Energy Transfer" || route.type === "Planned Route") return "lowEnergy";
+  if (route.type === "Shuttle Transfer") return "fastTransfers";
+  return "infrastructure";
+}
+
+function objectModelClass(item) {
+  if (item.id === "cycler" || item.type === "Cycler Line") return "Schematic / cycler approximation";
+  if (item.type?.includes("Educational")) return "Educational example";
+  if (item.type?.includes("Lagrange") || item.id?.includes("-l1") || item.id?.includes("-l2") || item.id?.includes("-l4") || item.id?.includes("-l5")) return "Schematic Lagrange region";
+  if (gatewayNodes.some((node) => node.id === item.id)) return "Local schematic";
+  if (shuttleRoutes.some((route) => route.id === item.id)) return "Schematic taxi transfer";
+  if (routeClasses.some((route) => route.id === item.id)) return "Route class";
+  return "Keplerian approximation";
+}
+
+function articleIdFor(id) {
+  if (id === "earth-moon-l2") return "earth-moon-l1";
+  if (id === "sun-earth-l2" || id === "earth-l4" || id === "earth-l5") return "sun-earth-l1";
+  if (id === "cycler-line" || id === "earth-cycler-a" || id === "earth-cycler-b" || id === "cycler-mars-a" || id === "cycler-mars-b" || id === "mars-cycler-point") return "cycler";
+  if (id === "earth-mars-fast") return "hohmann-transfer";
+  if (id === "earth-ceres-low" || id === "mars-ceres-planned" || id === "ceres-drift-hub") return "low-energy-transfer";
+  if (id === "mars-surface-phobos") return "gateway";
+  if (id === "parker-style-probe" || id === "jwst-style-l2") return "low-energy-transfer";
+  return explanationEntries[id] ? id : "orbit-view";
 }
 
 function drawSpace() {
@@ -835,21 +1049,27 @@ function drawOrbitView() {
   drawSpace();
   if (state.showOrbits) {
     if (state.scaleMode !== "earth" && state.scaleMode !== "mars") {
-      bodies.forEach((body) => {
+      if (layerEnabled("planets")) bodies.forEach((body) => {
         if (visibleInScale(body.id) || state.scaleMode === "ceres") drawOrbit(body);
       });
       drawAsteroidBelt();
-      if (visibleInScale("cycler")) drawOrbit(cyclerOrbit, "rgba(255, 208, 111, 0.34)", [8, 7]);
+      if (layerEnabled("cyclers") && visibleInScale("cycler")) drawOrbit(cyclerOrbit, "rgba(255, 208, 111, 0.34)", [8, 7]);
+      if (layerEnabled("probeOrbits")) probeOrbits.forEach((probe) => {
+        if (probe.semiMajor) drawOrbit(probe, `${probe.color}55`, [5, 8]);
+      });
     }
-    if (state.scaleMode === "earth") drawLocalOrbit("earth", 0.00257, "#d7dce3");
+    if (state.scaleMode === "earth" && layerEnabled("infrastructure")) drawLocalOrbit("earth", 0.00257, "#d7dce3");
     if (state.scaleMode === "mars") {
-      drawLocalOrbit("mars", 0.00085, "#9ff1c7");
-      drawLocalOrbit("mars", 0.0018, "#b8f3dd");
+      if (layerEnabled("infrastructure")) {
+        drawLocalOrbit("mars", 0.00085, "#9ff1c7");
+        drawLocalOrbit("mars", 0.0018, "#b8f3dd");
+      }
     }
   }
 
   if (state.scaleMode !== "earth" && state.scaleMode !== "mars") {
     routeClasses.forEach((route, index) => {
+      if (!layerEnabled(routeLayer(route))) return;
       if (visibleInScale(route.from) || visibleInScale(route.to) || state.scaleMode === "ceres") {
         drawCurvedRoute(route.from, route.to, `${route.color}88`, route.dash, -0.12 - index * 0.025, route.type === "Fast Transfer" ? 1.6 : 1.2);
       }
@@ -858,20 +1078,29 @@ function drawOrbitView() {
 
   drawSun();
   bodies.forEach((body) => {
-    if (visibleInScale(body.id)) drawObject(body, getBodyWorld(body.id), body.radius, body.color, "body");
+    if (layerEnabled("planets") && visibleInScale(body.id)) drawObject(body, getBodyWorld(body.id), body.radius, body.color, "body", "", layerEnabled("labels"));
   });
   gatewayNodes.forEach((node) => {
-    if (visibleInScale(node.id)) drawObject(node, node.position(), node.radius, node.color, "node");
+    if (layerEnabled(nodeLayer(node)) && visibleInScale(node.id)) drawObject(node, node.position(), node.radius, node.color, "node", "", layerEnabled("labels"));
   });
-  if (visibleInScale("cycler")) drawObject(cyclerOrbit, getBodyWorld("cycler"), cyclerOrbit.radius, cyclerOrbit.color, "cycler", nextCyclerStop().label);
+  if (layerEnabled("cyclers") && visibleInScale("cycler")) drawObject(cyclerOrbit, getBodyWorld("cycler"), cyclerOrbit.radius, cyclerOrbit.color, "cycler", nextCyclerStop().label, layerEnabled("labels"));
+
+  if (layerEnabled("probeOrbits")) {
+    probeOrbits.forEach((probe) => {
+      const worldPos = probe.position ? probe.position() : ellipticalWorld(probe);
+      const show = probe.id === "jwst-style-l2" ? state.scaleMode === "earth" || state.scaleMode === "inner" : state.scaleMode === "solar" || state.scaleMode === "inner";
+      if (show) drawObject(probe, worldPos, probe.radius, probe.color, "node", "science", layerEnabled("labels"));
+    });
+  }
 
   shuttleRoutes.forEach((route) => {
+    if (!layerEnabled(routeLayer(route))) return;
     const show = visibleInScale(route.from) || visibleInScale(route.to) || (state.scaleMode === "inner" && route.stop !== "mars");
     if (!show) return;
     drawShuttleRoute(route);
     const pos = getShuttleWorld(route);
     const eta = pos.trip.active ? formatEta(pos.trip.nextArrival - state.simDays) : `T ${formatEta(pos.trip.nextDeparture - state.simDays)}`;
-    drawObject(route, pos, pos.parked ? 3.8 : 5.2, route.color, "shuttle", eta, !pos.parked);
+    drawObject(route, pos, pos.parked ? 3.8 : 5.2, route.color, "shuttle", eta, !pos.parked && layerEnabled("labels"));
   });
 }
 
@@ -1153,7 +1382,10 @@ function draw() {
 function updateHud() {
   simDateEl.textContent = formatDate(state.simDays);
   const conceptual = state.viewMode !== "orbit";
-  statusPill.textContent = conceptual ? "Concept" : state.paused ? "Paused" : "Running";
+  const model = viewModels[state.viewMode];
+  modelBadge.textContent = model.label;
+  modelNote.textContent = model.note;
+  statusPill.textContent = conceptual ? "Research" : state.paused ? "Paused" : "Running";
   statusPill.style.color = conceptual ? "#8fd4ff" : state.paused ? "#ffd06f" : "#79e4b0";
   pauseButton.disabled = conceptual;
   orbitToggle.disabled = conceptual;
@@ -1179,9 +1411,17 @@ function describeObject(id) {
   if (body) return objectInfo(body, `${angleDegrees(bodyAngle(body))} deg / ${formatOrbitalPeriod(body.period)}`);
   const node = gatewayNodes.find((item) => item.id === id);
   if (node) return objectInfo(node, positionSummary(node.position()));
+  const probe = probeOrbits.find((item) => item.id === id);
+  if (probe) return objectInfo(probe, probe.position ? positionSummary(probe.position()) : `${angleDegrees(bodyAngle(probe))} deg / educational orbit`);
   if (id === "cycler") {
     const stop = nextCyclerStop();
-    return objectInfo(cyclerOrbit, `${stop.label} in ${formatEta(stop.eta)}`, stop.label, formatEta(stop.eta));
+    return objectInfo(
+      cyclerOrbit,
+      `${stop.label} in ${formatEta(stop.eta)}`,
+      stop.label,
+      formatEta(stop.eta),
+      "Stylized Aldrin-cycler approximation; taxi arcs are timing symbols, not rendezvous trajectories."
+    );
   }
   const shuttle = shuttleRoutes.find((item) => item.id === id);
   if (shuttle) {
@@ -1191,7 +1431,8 @@ function describeObject(id) {
       shuttle,
       trip.active ? "in transfer" : "staged for next window",
       `${trip.active ? "Arrives" : "Launches"} ${formatDate(trip.active ? arrivalDay : trip.nextDeparture)}`,
-      formatEta((trip.active ? arrivalDay : trip.nextDeparture) - state.simDays)
+      formatEta((trip.active ? arrivalDay : trip.nextDeparture) - state.simDays),
+      "Schematic taxi leg; real cycler rendezvous requires substantial maneuvering."
     );
   }
   const route = routeClasses.find((item) => item.id === id);
@@ -1199,22 +1440,35 @@ function describeObject(id) {
   return null;
 }
 
-function objectInfo(item, phase, nextEvent = "--", eta = "--") {
+function objectInfo(item, phase, nextEvent = "--", eta = "--", modelNoteText = "") {
   const connected = connectedRoutes(item.id);
+  const modelClass = objectModelClass(item);
   return {
+    id: item.id,
     name: item.name,
     lead: item.role,
+    articleId: articleIdFor(item.id),
     details: [
       ["Type", item.type || "Infrastructure node"],
+      ["Model class", modelClass],
       ["Role", item.role],
       ["Parent system", item.parent || "--"],
       ["Position / phase", phase],
       ["Next event", nextEvent],
       ["Connected routes", connected.length ? connected.join(", ") : "--"],
       ["Infrastructure potential", item.infrastructure || "Medium"],
-      ["ETA", eta]
+      ["ETA", eta],
+      ["Model limit", modelNoteText || modelLimitFor(modelClass)]
     ]
   };
+}
+
+function modelLimitFor(modelClass) {
+  if (modelClass.includes("Keplerian")) return `Epoch ${modelEpochLabel}; ${modelTimeSpan}`;
+  if (modelClass.includes("Lagrange") || modelClass.includes("Local")) return "Distances and local layouts are exaggerated for readability.";
+  if (modelClass.includes("Route")) return "Route class only; not an optimized transfer.";
+  if (modelClass.includes("Educational")) return "Shown to explain an energy regime, not as infrastructure.";
+  return "Conceptual visualization; not mission software.";
 }
 
 function connectedRoutes(id) {
@@ -1226,6 +1480,7 @@ function connectedRoutes(id) {
 function updateInspector(id) {
   const info = describeObject(id);
   if (!info) return;
+  state.activeArticleId = info.articleId;
   inspectName.textContent = info.name;
   inspectRoute.textContent = info.lead;
   inspectDetails.innerHTML = info.details.map(([label, value]) => `
@@ -1234,6 +1489,37 @@ function updateInspector(id) {
       <dd>${value}</dd>
     </div>
   `).join("");
+}
+
+function openArticle(id = state.activeArticleId) {
+  state.activeArticleId = id;
+  const entry = explanationEntries[id] || explanationEntries["orbit-view"];
+  articleTitle.textContent = entry.title;
+  articleBody.innerHTML = `
+    <section>
+      <h3>Definition</h3>
+      <p>${entry.definition}</p>
+    </section>
+    <section>
+      <h3>Why It Matters</h3>
+      <p>${entry.matters}</p>
+    </section>
+    <section>
+      <h3>What This Demo Models</h3>
+      <p>${entry.models}</p>
+    </section>
+    <section>
+      <h3>What This Demo Simplifies</h3>
+      <p>${entry.simplifies}</p>
+    </section>
+  `;
+  articleDrawer.classList.add("open");
+  articleDrawer.setAttribute("aria-hidden", "false");
+}
+
+function closeArticle() {
+  articleDrawer.classList.remove("open");
+  articleDrawer.setAttribute("aria-hidden", "true");
 }
 
 function updateSchedule() {
@@ -1300,6 +1586,7 @@ function setSpeed(speed) {
 function setViewMode(mode) {
   state.viewMode = mode;
   state.selectedId = null;
+  state.activeArticleId = mode === "gravity" ? "gravity-view" : mode === "manifold" ? "low-energy-routes-view" : "orbit-view";
   if (mode !== "orbit") {
     state.conceptSnapshotDay = state.simDays;
     state.concept.rotation = mode === "gravity" ? -0.22 : 0.12;
@@ -1391,6 +1678,22 @@ function angleDegrees(angle) {
 function positionSummary(pos) {
   return `${pos.x.toFixed(3)} AU, ${pos.y.toFixed(3)} AU`;
 }
+
+layerToggles.forEach((toggle) => {
+  toggle.addEventListener("change", () => {
+    state.layers[toggle.dataset.layer] = toggle.checked;
+  });
+});
+
+sheetButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    document.body.dataset.sheetState = button.dataset.sheetState;
+    sheetButtons.forEach((item) => item.classList.toggle("active", item === button));
+  });
+});
+
+articleButton.addEventListener("click", () => openArticle(state.activeArticleId));
+articleClose.addEventListener("click", closeArticle);
 
 speedButtons.forEach((button) => {
   button.addEventListener("click", () => setSpeed(Number(button.dataset.speed)));
@@ -1492,5 +1795,6 @@ window.addEventListener("resize", resize);
 resize();
 setSpeed(10);
 document.body.dataset.viewMode = state.viewMode;
+document.body.dataset.sheetState = "peek";
 updateInspector("earth");
 requestAnimationFrame(tick);

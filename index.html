@@ -11,11 +11,15 @@
       <section class="viewer" aria-label="Solar network visualization">
         <canvas id="solarCanvas"></canvas>
         <div class="hud top-left">
-          <div class="kicker">Demo 001</div>
+          <div class="kicker">Demo 002</div>
           <h1>Solar Infrastructure Viewer</h1>
           <div class="date-row">
             <span id="simDate">--</span>
             <span id="statusPill" class="status-pill">Running</span>
+          </div>
+          <div class="model-card">
+            <span id="modelBadge" class="model-badge">Ephemeris-like / approximate</span>
+            <span id="modelNote">Documented Keplerian epoch; spacecraft routes are schematic.</span>
           </div>
         </div>
 
@@ -31,6 +35,20 @@
           <button class="scale-button" data-scale-mode="earth" type="button">Earth Gateway</button>
           <button class="scale-button" data-scale-mode="mars" type="button">Mars Gateway</button>
           <button class="scale-button" data-scale-mode="ceres" type="button">Ceres / Belt</button>
+        </div>
+
+        <div class="hud layer-panel" aria-label="Route atlas layers">
+          <div class="panel-title">Atlas Layers</div>
+          <div class="layer-grid">
+            <label class="layer-toggle"><input type="checkbox" data-layer="planets" checked><span>Planets</span></label>
+            <label class="layer-toggle"><input type="checkbox" data-layer="infrastructure" checked><span>Nodes</span></label>
+            <label class="layer-toggle"><input type="checkbox" data-layer="lagrange" checked><span>Lagrange</span></label>
+            <label class="layer-toggle"><input type="checkbox" data-layer="cyclers" checked><span>Cyclers</span></label>
+            <label class="layer-toggle"><input type="checkbox" data-layer="fastTransfers" checked><span>Fast</span></label>
+            <label class="layer-toggle"><input type="checkbox" data-layer="lowEnergy" checked><span>Low energy</span></label>
+            <label class="layer-toggle"><input type="checkbox" data-layer="probeOrbits" checked><span>Probes</span></label>
+            <label class="layer-toggle"><input type="checkbox" data-layer="labels" checked><span>Labels</span></label>
+          </div>
         </div>
 
         <div class="hud controls" aria-label="Simulation controls">
@@ -52,14 +70,33 @@
         </div>
 
         <aside class="hud inspector" aria-live="polite">
-          <div class="panel-title">Inspection</div>
+          <div class="inspector-bar">
+            <div class="panel-title">Inspection</div>
+            <div class="sheet-buttons" aria-label="Inspector panel size">
+              <button class="sheet-button" data-sheet-state="collapsed" type="button" title="Collapse inspector">-</button>
+              <button class="sheet-button active" data-sheet-state="peek" type="button" title="Peek inspector">=</button>
+              <button class="sheet-button" data-sheet-state="expanded" type="button" title="Expand inspector">+</button>
+            </div>
+          </div>
           <h2 id="inspectName">Select an object</h2>
           <p id="inspectRoute">Click a planet, station point, cycler, or shuttle to inspect its route.</p>
+          <button id="articleButton" class="article-button" type="button">Open explanation</button>
           <dl id="inspectDetails"></dl>
           <div class="schedule">
             <div class="panel-title">Shuttle Schedule</div>
             <div id="scheduleList" class="schedule-list"></div>
           </div>
+        </aside>
+
+        <aside id="articleDrawer" class="hud article-drawer" aria-live="polite" aria-hidden="true">
+          <div class="article-head">
+            <div>
+              <div class="panel-title">Explanation</div>
+              <h2 id="articleTitle">Orbit View</h2>
+            </div>
+            <button id="articleClose" class="icon-button" type="button" title="Close explanation" aria-label="Close explanation">x</button>
+          </div>
+          <div id="articleBody" class="article-body"></div>
         </aside>
 
         <div class="legend" aria-label="Object legend">
