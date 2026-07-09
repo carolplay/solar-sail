@@ -9,24 +9,42 @@ const zoomInButton = document.getElementById("zoomInButton");
 const orbitToggle = document.getElementById("orbitToggle");
 const inspectName = document.getElementById("inspectName");
 const inspectRoute = document.getElementById("inspectRoute");
-const inspectArrival = document.getElementById("inspectArrival");
-const inspectEta = document.getElementById("inspectEta");
+const inspectDetails = document.getElementById("inspectDetails");
 const scheduleList = document.getElementById("scheduleList");
 const speedButtons = Array.from(document.querySelectorAll(".speed-button"));
+const modeButtons = Array.from(document.querySelectorAll(".mode-button"));
+const scaleButtons = Array.from(document.querySelectorAll(".scale-button"));
 
 const DAY_MS = 86400000;
 const startDate = new Date(Date.UTC(2187, 0, 1, 12));
+const tilt = 0.47;
+
 const state = {
   simDays: 0,
   speed: 10,
   paused: false,
   showOrbits: true,
+  viewMode: "orbit",
+  scaleMode: "solar",
   selectedId: null,
   hoverId: null,
   width: 0,
   height: 0,
   dpr: 1,
   center: { x: 0, y: 0 },
+  centerWorld: { x: 0, y: 0 },
+  cameraCenterWorld: { x: 0, y: 0 },
+  targetCenterWorld: { x: 0, y: 0 },
+  cameraSpanAu: 6.2,
+  targetSpanAu: 6.2,
+  transition: null,
+  conceptSnapshotDay: 0,
+  concept: {
+    rotation: -0.22,
+    pitch: 0.34,
+    zoom: 1,
+    pan: { x: 0, y: 0 }
+  },
   au: 1,
   zoom: 1,
   pan: { x: 0, y: 0 },
@@ -37,44 +55,376 @@ const state = {
   labelBoxes: []
 };
 
+const scaleModes = {
+  solar: {
+    label: "Solar System",
+    spanAu: 6.2,
+    center: () => ({ x: 0, y: 0 }),
+    visible: new Set(["sun", "mercury", "earth", "mars", "ceres", "vesta", "earth-l4", "earth-l5", "cycler"])
+  },
+  inner: {
+    label: "Inner System",
+    spanAu: 3.5,
+    center: () => ({ x: 0.55, y: 0 }),
+    visible: new Set(["sun", "mercury", "earth", "mars", "ceres", "earth-l4", "earth-l5", "sun-earth-l1", "sun-earth-l2", "cycler"])
+  },
+  earth: {
+    label: "Earth Gateway",
+    spanAu: 0.025,
+    center: () => getBodyWorld("earth"),
+    visible: new Set(["earth", "leo-port", "moon", "earth-moon-l1", "sun-earth-l1", "sun-earth-l2", "earth-l4", "earth-l5"])
+  },
+  mars: {
+    label: "Mars Gateway",
+    spanAu: 0.02,
+    center: () => getBodyWorld("mars"),
+    visible: new Set(["mars", "phobos-port", "deimos-port", "mars-cycler-point"])
+  },
+  ceres: {
+    label: "Ceres / Belt",
+    spanAu: 1.2,
+    center: () => getBodyWorld("ceres"),
+    visible: new Set(["ceres", "vesta", "ceres-drift-hub"])
+  }
+};
+
 const bodies = [
-  { id: "earth", name: "Earth", semiMajor: 1, eccentricity: 0.0167, period: 365.25, radius: 7, color: "#6fb8ff", phase: 0.15, argPeri: 1.8, route: "Primary inner-system port" },
-  { id: "mars", name: "Mars", semiMajor: 1.524, eccentricity: 0.0934, period: 686.98, radius: 6, color: "#e46f58", phase: 1.95, argPeri: 5.0, route: "Outbound terminus for the cycler corridor" },
-  { id: "ceres", name: "Ceres", semiMajor: 2.77, eccentricity: 0.076, period: 1681.6, radius: 4.5, color: "#b8c0ca", phase: 2.8, argPeri: 1.3, route: "Belt anchor and remote traffic marker" }
+  {
+    id: "mercury",
+    name: "Mercury",
+    type: "Terrestrial world",
+    parent: "Sun",
+    role: "Inner-system reference world and high-solar-energy logistics marker",
+    infrastructure: "Low",
+    semiMajor: 0.387,
+    eccentricity: 0.2056,
+    period: 87.969,
+    radius: 4.2,
+    color: "#c7a36c",
+    phase: 2.3,
+    argPeri: 0.5
+  },
+  {
+    id: "earth",
+    name: "Earth",
+    type: "Terrestrial world",
+    parent: "Sun",
+    role: "Primary inner-system origin and deep gravity well",
+    infrastructure: "High",
+    semiMajor: 1,
+    eccentricity: 0.0167,
+    period: 365.256,
+    radius: 7,
+    color: "#78bfff",
+    phase: 0.15,
+    argPeri: 1.8
+  },
+  {
+    id: "mars",
+    name: "Mars",
+    type: "Terrestrial world",
+    parent: "Sun",
+    role: "Outbound terminus for cycler logistics and surface-to-orbit shuttles",
+    infrastructure: "High",
+    semiMajor: 1.524,
+    eccentricity: 0.0934,
+    period: 686.98,
+    radius: 6,
+    color: "#e9785f",
+    phase: 1.95,
+    argPeri: 5.0
+  },
+  {
+    id: "ceres",
+    name: "Ceres",
+    type: "Dwarf planet / belt hub",
+    parent: "Asteroid Belt",
+    role: "Water, volatile, and long-haul cargo logistics gateway",
+    infrastructure: "High",
+    semiMajor: 2.77,
+    eccentricity: 0.076,
+    period: 1681.6,
+    radius: 4.8,
+    color: "#c5cbd4",
+    phase: 2.8,
+    argPeri: 1.3
+  },
+  {
+    id: "vesta",
+    name: "Vesta",
+    type: "Asteroid placeholder",
+    parent: "Asteroid Belt",
+    role: "Optional belt logistics marker for future cargo-route planning",
+    infrastructure: "Medium",
+    semiMajor: 2.36,
+    eccentricity: 0.089,
+    period: 1325,
+    radius: 3.8,
+    color: "#aeb6c1",
+    phase: 4.3,
+    argPeri: 2.6
+  }
 ];
 
 const cyclerOrbit = {
-  semiMajor: 1.36,
-  eccentricity: 0.27,
-  period: 780,
-  phase: 0,
-  argPeri: 0.22
-};
-
-const lagrangePoints = [
-  { id: "earth-l4", name: "Earth L4", offset: Math.PI / 3, color: "#ff86b4", route: "Leading Earth Trojan infrastructure cluster" },
-  { id: "earth-l5", name: "Earth L5", offset: -Math.PI / 3, color: "#ff86b4", route: "Trailing Earth Trojan infrastructure cluster" }
-];
-
-const cycler = {
   id: "cycler",
   name: "Aldrin Cycler",
+  type: "Cycler Line",
+  parent: "Earth-Mars corridor",
+  role: "Repeating Earth-Mars flyby orbit that behaves like scheduled interplanetary infrastructure",
+  infrastructure: "Very high",
+  semiMajor: 1.6,
+  eccentricity: 0.393,
   period: 780,
+  phase: 0,
+  argPeri: 0.22,
   radius: 6,
   color: "#ffd06f",
-  route: "Repeating Earth-Mars cycler orbit",
   stops: [
     { id: "earth", day: 0, label: "Earth rendezvous" },
-    { id: "mars", day: 258, label: "Mars rendezvous" },
+    { id: "mars", day: 146, label: "Mars rendezvous" },
     { id: "earth", day: 780, label: "Earth rendezvous" }
   ]
 };
 
+const gatewayNodes = [
+  {
+    id: "leo-port",
+    name: "LEO Port",
+    type: "Earth Gateway",
+    parent: "Earth System",
+    role: "Earth gravity-well exit, assembly, and refueling node",
+    infrastructure: "Very high",
+    color: "#90f0c6",
+    radius: 4.5,
+    position: () => offsetFrom("earth", 0.00072, bodyAngle(getBody("earth")) + 1.4)
+  },
+  {
+    id: "moon",
+    name: "Moon",
+    type: "Natural satellite",
+    parent: "Earth System",
+    role: "Nearby mass anchor for Earth-Moon logistics and staging",
+    infrastructure: "Medium",
+    color: "#d7dce3",
+    radius: 4.6,
+    position: () => offsetFrom("earth", 0.00257, lunarAngle())
+  },
+  {
+    id: "earth-moon-l1",
+    name: "Earth-Moon L1",
+    type: "Earth Gateway",
+    parent: "Earth-Moon System",
+    role: "Lunar transfer gateway and staging point between Earth orbit and lunar space",
+    infrastructure: "High",
+    color: "#c6a7ff",
+    radius: 4.2,
+    position: () => offsetFrom("earth", 0.00217, lunarAngle())
+  },
+  {
+    id: "sun-earth-l1",
+    name: "Sun-Earth L1",
+    type: "Solar observation gateway",
+    parent: "Sun-Earth System",
+    role: "Solar warning, power monitoring, and heliophysics observation point",
+    infrastructure: "Medium",
+    color: "#ffa96f",
+    radius: 4,
+    position: () => offsetFrom("earth", 0.010, bodyAngle(getBody("earth")) + Math.PI)
+  },
+  {
+    id: "sun-earth-l2",
+    name: "Sun-Earth L2",
+    type: "Deep-space observation gateway",
+    parent: "Sun-Earth System",
+    role: "Deep-space telescope, navigation, and communications staging point",
+    infrastructure: "High",
+    color: "#ffa96f",
+    radius: 4,
+    position: () => offsetFrom("earth", 0.010, bodyAngle(getBody("earth")))
+  },
+  {
+    id: "earth-l4",
+    name: "Sun-Earth L4",
+    type: "Solar Lagrange zone",
+    parent: "Sun-Earth System",
+    role: "Leading stable industrial, data, or storage zone",
+    infrastructure: "Medium",
+    color: "#ff91bb",
+    radius: 4.2,
+    position: () => lagrangeOrbit("earth", Math.PI / 3)
+  },
+  {
+    id: "earth-l5",
+    name: "Sun-Earth L5",
+    type: "Solar Lagrange zone",
+    parent: "Sun-Earth System",
+    role: "Trailing stable industrial, data, or storage zone",
+    infrastructure: "Medium",
+    color: "#ff91bb",
+    radius: 4.2,
+    position: () => lagrangeOrbit("earth", -Math.PI / 3)
+  },
+  {
+    id: "phobos-port",
+    name: "Phobos Port",
+    type: "Mars Gateway",
+    parent: "Mars System",
+    role: "Mars orbital port, maintenance yard, and fuel-transfer gateway",
+    infrastructure: "High",
+    color: "#9ff1c7",
+    radius: 4.5,
+    position: () => offsetFrom("mars", 0.00085, marsMoonAngle(1.0))
+  },
+  {
+    id: "deimos-port",
+    name: "Deimos Deep Space Port",
+    type: "Mars Gateway",
+    parent: "Mars System",
+    role: "Outer Mars gateway for asteroid-belt departure and deep-space staging",
+    infrastructure: "High",
+    color: "#b8f3dd",
+    radius: 4.2,
+    position: () => offsetFrom("mars", 0.0018, marsMoonAngle(2.4))
+  },
+  {
+    id: "mars-cycler-point",
+    name: "Mars Cycler Connection",
+    type: "Transfer node",
+    parent: "Mars System",
+    role: "Symbolic intercept point where Mars shuttles meet the Earth-Mars cycler",
+    infrastructure: "High",
+    color: "#ffd06f",
+    radius: 4,
+    position: () => offsetFrom("mars", 0.0031, bodyAngle(getBody("mars")) + 0.9)
+  },
+  {
+    id: "ceres-drift-hub",
+    name: "Ceres Drift Hub",
+    type: "Planned Route Node",
+    parent: "Asteroid Belt",
+    role: "Conceptual staging point for slow cargo drift routes through the belt",
+    infrastructure: "Medium",
+    color: "#9fc7ff",
+    radius: 4,
+    position: () => offsetFrom("ceres", 0.12, bodyAngle(getBody("ceres")) + 1.2)
+  }
+];
+
+const routeClasses = [
+  {
+    id: "cycler-line",
+    name: "Cycler Line",
+    type: "Cycler Line",
+    role: "Scheduled high-capacity infrastructure orbit",
+    color: "#ffd06f",
+    dash: [8, 7],
+    from: "earth",
+    to: "mars"
+  },
+  {
+    id: "earth-mars-fast",
+    name: "Fast Earth-Mars Transfer",
+    type: "Fast Transfer",
+    role: "Bright, higher-energy route class for quick crew or priority cargo transfers",
+    color: "#8fd4ff",
+    dash: [],
+    from: "earth",
+    to: "mars"
+  },
+  {
+    id: "earth-ceres-low",
+    name: "Low-Energy Belt Corridor",
+    type: "Low-Energy Transfer",
+    role: "Faint slow corridor connecting Sun-Earth gateways to the asteroid belt",
+    color: "#8da7ff",
+    dash: [3, 10],
+    from: "earth-l5",
+    to: "ceres"
+  },
+  {
+    id: "mars-ceres-planned",
+    name: "Mars-Ceres Planned Route",
+    type: "Planned Route",
+    role: "Thin dotted cargo planning route between Mars gateways and Ceres",
+    color: "#9aa6b2",
+    dash: [2, 8],
+    from: "mars",
+    to: "ceres"
+  }
+];
+
 const shuttleRoutes = [
-  { id: "earth-cycler-a", name: "Shuttle E-C 01", from: "earth", to: "cycler", stop: "earth", departOffset: -9, duration: 9, color: "#88efbc", route: "Earth launch timed to cycler Earth rendezvous" },
-  { id: "earth-cycler-b", name: "Shuttle C-E 02", from: "cycler", to: "earth", stop: "earth", departOffset: 0, duration: 9, color: "#88efbc", route: "Cycler return timed to Earth flyby" },
-  { id: "cycler-mars-a", name: "Shuttle C-M 03", from: "cycler", to: "mars", stop: "mars", departOffset: 0, duration: 16, color: "#9df7d0", route: "Mars terminal transfer timed to cycler Mars rendezvous" },
-  { id: "cycler-mars-b", name: "Shuttle M-C 04", from: "mars", to: "cycler", stop: "mars", departOffset: -16, duration: 16, color: "#9df7d0", route: "Mars ascent timed to cycler intercept" }
+  {
+    id: "earth-cycler-a",
+    name: "Shuttle E-C 01",
+    type: "Shuttle Transfer",
+    parent: "Earth-Mars corridor",
+    role: "Earth launch timed to cycler Earth rendezvous",
+    infrastructure: "Medium",
+    from: "leo-port",
+    to: "cycler",
+    stop: "earth",
+    departOffset: -9,
+    duration: 9,
+    color: "#88efbc"
+  },
+  {
+    id: "earth-cycler-b",
+    name: "Shuttle C-E 02",
+    type: "Shuttle Transfer",
+    parent: "Earth-Mars corridor",
+    role: "Cycler return timed to Earth flyby",
+    infrastructure: "Medium",
+    from: "cycler",
+    to: "leo-port",
+    stop: "earth",
+    departOffset: 0,
+    duration: 9,
+    color: "#88efbc"
+  },
+  {
+    id: "cycler-mars-a",
+    name: "Shuttle C-M 03",
+    type: "Shuttle Transfer",
+    parent: "Mars System",
+    role: "Mars terminal transfer timed to cycler Mars rendezvous",
+    infrastructure: "Medium",
+    from: "cycler",
+    to: "phobos-port",
+    stop: "mars",
+    departOffset: 0,
+    duration: 16,
+    color: "#9df7d0"
+  },
+  {
+    id: "cycler-mars-b",
+    name: "Shuttle M-C 04",
+    type: "Shuttle Transfer",
+    parent: "Mars System",
+    role: "Mars ascent timed to cycler intercept",
+    infrastructure: "Medium",
+    from: "phobos-port",
+    to: "cycler",
+    stop: "mars",
+    departOffset: -16,
+    duration: 16,
+    color: "#9df7d0"
+  },
+  {
+    id: "mars-surface-phobos",
+    name: "Mars Surface Shuttle",
+    type: "Shuttle Transfer",
+    parent: "Mars System",
+    role: "Reusable local shuttle between Mars surface and Phobos Port",
+    infrastructure: "High",
+    from: "mars",
+    to: "phobos-port",
+    stop: "mars",
+    departOffset: -4,
+    duration: 4,
+    color: "#c4f7b4"
+  }
 ];
 
 let lastFrame = performance.now();
@@ -89,65 +439,83 @@ function resize() {
   canvas.style.height = `${state.height}px`;
   ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
   state.center = {
-    x: state.width * (state.width < 820 ? 0.48 : 0.46),
-    y: state.height * (state.width < 820 ? 0.42 : 0.52)
+    x: state.width * (state.width < 820 ? 0.5 : 0.47),
+    y: state.height * (state.width < 820 ? 0.43 : 0.53)
   };
-  const usable = Math.min(state.width * 0.82, state.height * 0.78);
-  state.au = usable / 6.1;
+  updateScaleMetrics();
 }
 
-function toScreen(pos) {
+function updateScaleMetrics() {
+  const config = scaleModes[state.scaleMode];
+  const usable = Math.min(state.width * 0.78, state.height * 0.74);
+  state.targetCenterWorld = config.center();
+  state.targetSpanAu = config.spanAu;
+  if (!state.transition) {
+    state.cameraCenterWorld = state.targetCenterWorld;
+    state.cameraSpanAu = state.targetSpanAu;
+  }
+  state.centerWorld = state.cameraCenterWorld;
+  state.au = usable / state.cameraSpanAu;
+}
+
+function resetViewForScale() {
+  state.zoom = 1;
+  state.pan = { x: 0, y: 0 };
+  updateScaleMetrics();
+}
+
+function startCameraTransition(targetMode) {
+  const target = scaleModes[targetMode];
+  state.transition = {
+    started: performance.now(),
+    duration: 820,
+    fromCenter: { ...state.cameraCenterWorld },
+    toCenter: target.center(),
+    fromSpan: state.cameraSpanAu,
+    toSpan: target.spanAu
+  };
+}
+
+function updateCameraTransition(now) {
+  if (!state.transition) return;
+  const t = Math.min(1, (now - state.transition.started) / state.transition.duration);
+  const eased = t * t * (3 - 2 * t);
+  state.cameraCenterWorld = {
+    x: lerp(state.transition.fromCenter.x, state.transition.toCenter.x, eased),
+    y: lerp(state.transition.fromCenter.y, state.transition.toCenter.y, eased)
+  };
+  state.cameraSpanAu = lerp(state.transition.fromSpan, state.transition.toSpan, eased);
+  if (t >= 1) state.transition = null;
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function worldToScreen(pos, useTilt = true) {
   return {
-    x: state.center.x + (pos.x - state.center.x) * state.zoom + state.pan.x,
-    y: state.center.y + (pos.y - state.center.y) * state.zoom + state.pan.y
+    x: state.center.x + (pos.x - state.centerWorld.x) * state.au * state.zoom + state.pan.x,
+    y: state.center.y + (pos.y - state.centerWorld.y) * state.au * state.zoom * (useTilt ? tilt : 1) + state.pan.y
   };
 }
 
-function fromScreen(point) {
+function screenToWorld(point) {
   return {
-    x: state.center.x + (point.x - state.center.x - state.pan.x) / state.zoom,
-    y: state.center.y + (point.y - state.center.y - state.pan.y) / state.zoom
+    x: state.centerWorld.x + (point.x - state.center.x - state.pan.x) / (state.au * state.zoom),
+    y: state.centerWorld.y + (point.y - state.center.y - state.pan.y) / (state.au * state.zoom * tilt)
   };
-}
-
-function screenCenter() {
-  return toScreen(state.center);
 }
 
 function meanAnomaly(body, day = state.simDays) {
   return body.phase + (day / body.period) * Math.PI * 2;
 }
 
-function bodyAngle(body, day = state.simDays) {
-  return trueAnomaly(meanAnomaly(body, day), body.eccentricity) + body.argPeri;
-}
-
-function orbitPosition(orbit, angle, radius = orbit) {
-  const tilt = 0.47;
-  return {
-    x: state.center.x + Math.cos(angle) * radius * state.au,
-    y: state.center.y + Math.sin(angle) * radius * state.au * tilt
-  };
-}
-
-function ellipticalPosition(orbit, day = state.simDays) {
-  const anomaly = meanAnomaly(orbit, day);
-  const eccentricAnomaly = solveEccentricAnomaly(anomaly, orbit.eccentricity);
-  const angle = trueAnomalyFromEccentric(eccentricAnomaly, orbit.eccentricity) + orbit.argPeri;
-  const radius = orbit.semiMajor * (1 - orbit.eccentricity * Math.cos(eccentricAnomaly));
-  return orbitPosition(orbit.semiMajor, angle, radius);
-}
-
 function solveEccentricAnomaly(mean, eccentricity) {
   let eccentric = mean;
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i += 1) {
     eccentric -= (eccentric - eccentricity * Math.sin(eccentric) - mean) / (1 - eccentricity * Math.cos(eccentric));
   }
   return eccentric;
-}
-
-function trueAnomaly(mean, eccentricity) {
-  return trueAnomalyFromEccentric(solveEccentricAnomaly(mean, eccentricity), eccentricity);
 }
 
 function trueAnomalyFromEccentric(eccentricAnomaly, eccentricity) {
@@ -157,29 +525,136 @@ function trueAnomalyFromEccentric(eccentricAnomaly, eccentricity) {
   );
 }
 
-function getBodyPosition(id, day = state.simDays) {
-  if (id === "sun") return { x: state.center.x, y: state.center.y };
-  if (id === "cycler") return getCyclerPosition(day);
+function bodyAngle(body, day = state.simDays) {
+  const eccentric = solveEccentricAnomaly(meanAnomaly(body, day), body.eccentricity);
+  return trueAnomalyFromEccentric(eccentric, body.eccentricity) + body.argPeri;
+}
+
+function orbitalRadius(body, day = state.simDays) {
+  const eccentric = solveEccentricAnomaly(meanAnomaly(body, day), body.eccentricity);
+  return body.semiMajor * (1 - body.eccentricity * Math.cos(eccentric));
+}
+
+function ellipticalWorld(orbit, day = state.simDays) {
+  const angle = bodyAngle(orbit, day);
+  const radius = orbitalRadius(orbit, day);
+  return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
+}
+
+function getBody(id) {
+  if (id === "cycler") return cyclerOrbit;
+  return bodies.find((body) => body.id === id);
+}
+
+function getBodyWorld(id, day = state.simDays) {
+  if (id === "sun") return { x: 0, y: 0 };
+  if (id === "cycler") return ellipticalWorld(cyclerOrbit, day);
   const body = bodies.find((item) => item.id === id);
-  if (body) return ellipticalPosition(body, day);
-  const point = lagrangePoints.find((item) => item.id === id);
-  if (point) return getLagrangePosition(point, day);
-  return { x: state.center.x, y: state.center.y };
+  if (body) return ellipticalWorld(body, day);
+  const node = gatewayNodes.find((item) => item.id === id);
+  if (node) return node.position(day);
+  return { x: 0, y: 0 };
 }
 
-function getLagrangePosition(point, day = state.simDays) {
-  const earth = bodies[0];
-  const earthRadius = distanceFromSun(earth, day);
-  return orbitPosition(earth.semiMajor, bodyAngle(earth, day) + point.offset, earthRadius);
+function offsetFrom(parentId, distance, angle) {
+  const parent = getBodyWorld(parentId);
+  return {
+    x: parent.x + Math.cos(angle) * distance,
+    y: parent.y + Math.sin(angle) * distance
+  };
 }
 
-function getCyclerPosition(day = state.simDays) {
-  return ellipticalPosition(cyclerOrbit, day);
+function lagrangeOrbit(parentId, offset) {
+  const parent = getBody(parentId);
+  return {
+    x: Math.cos(bodyAngle(parent) + offset) * orbitalRadius(parent),
+    y: Math.sin(bodyAngle(parent) + offset) * orbitalRadius(parent)
+  };
 }
 
-function distanceFromSun(orbit, day = state.simDays) {
-  const eccentricAnomaly = solveEccentricAnomaly(meanAnomaly(orbit, day), orbit.eccentricity);
-  return orbit.semiMajor * (1 - orbit.eccentricity * Math.cos(eccentricAnomaly));
+function lunarAngle() {
+  return bodyAngle(getBody("earth")) + 0.7 + (state.simDays / 27.32) * Math.PI * 2;
+}
+
+function marsMoonAngle(offset) {
+  return bodyAngle(getBody("mars")) + offset + (state.simDays / 7.7) * Math.PI * 2;
+}
+
+function visibleInScale(id) {
+  return scaleModes[state.scaleMode].visible.has(id);
+}
+
+function drawSpace() {
+  const sun = worldToScreen({ x: 0, y: 0 });
+  const gradient = ctx.createRadialGradient(sun.x, sun.y, 0, sun.x, sun.y, Math.max(220, state.au * state.zoom * 2.8));
+  gradient.addColorStop(0, "rgba(255, 188, 78, 0.14)");
+  gradient.addColorStop(0.45, "rgba(51, 86, 110, 0.08)");
+  gradient.addColorStop(1, "rgba(5, 7, 11, 0)");
+  ctx.fillStyle = "#05070b";
+  ctx.fillRect(0, 0, state.width, state.height);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, state.width, state.height);
+
+  for (let i = 0; i < 120; i += 1) {
+    const x = (i * 181 + 37) % state.width;
+    const y = (i * 97 + 19) % state.height;
+    const alpha = 0.10 + ((i * 13) % 60) / 230;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(x, y, i % 5 === 0 ? 1.5 : 1, i % 7 === 0 ? 1.5 : 1);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawOrbit(orbit, color = "rgba(255,255,255,0.14)", dash = []) {
+  ctx.beginPath();
+  for (let i = 0; i <= 260; i += 1) {
+    const mean = (i / 260) * Math.PI * 2;
+    const eccentric = solveEccentricAnomaly(mean, orbit.eccentricity);
+    const angle = trueAnomalyFromEccentric(eccentric, orbit.eccentricity) + orbit.argPeri;
+    const radius = orbit.semiMajor * (1 - orbit.eccentricity * Math.cos(eccentric));
+    const p = worldToScreen({ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius });
+    if (i === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  }
+  ctx.strokeStyle = color;
+  ctx.lineWidth = orbit.id === "cycler" ? 1.5 : 1;
+  ctx.setLineDash(dash);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawAsteroidBelt() {
+  ctx.beginPath();
+  for (let i = 0; i <= 180; i += 1) {
+    const angle = (i / 180) * Math.PI * 2;
+    const noise = Math.sin(i * 2.1) * 0.035;
+    const p = worldToScreen({ x: Math.cos(angle) * (2.6 + noise), y: Math.sin(angle) * (2.6 - noise) });
+    if (i === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  }
+  ctx.strokeStyle = "rgba(187, 196, 206, 0.16)";
+  ctx.lineWidth = state.scaleMode === "ceres" ? 2 : 1.2;
+  ctx.setLineDash([1, 8]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawCurvedRoute(fromId, toId, color, dash = [], bend = -0.18, width = 1.3) {
+  const from = worldToScreen(getBodyWorld(fromId));
+  const to = worldToScreen(getBodyWorld(toId));
+  const mid = {
+    x: (from.x + to.x) / 2,
+    y: (from.y + to.y) / 2 + Math.hypot(to.x - from.x, to.y - from.y) * bend
+  };
+  ctx.beginPath();
+  ctx.moveTo(from.x, from.y);
+  ctx.quadraticCurveTo(mid.x, mid.y, to.x, to.y);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.setLineDash(dash);
+  ctx.stroke();
+  ctx.setLineDash([]);
 }
 
 function routeProgress(route, day = state.simDays) {
@@ -191,14 +666,13 @@ function routeProgress(route, day = state.simDays) {
     progress,
     nextDeparture: active ? event.departure : event.nextDeparture,
     nextArrival: active ? event.arrival : event.nextArrival,
-    currentEvent: event,
-    lastEvent: previousRouteEvent(route, day)
+    currentEvent: event
   };
 }
 
 function routeEvent(route, day = state.simDays) {
   const stopDay = stopDayFor(route.stop);
-  const currentCycle = Math.floor((day - stopDay - route.departOffset) / cycler.period);
+  const currentCycle = Math.floor((day - stopDay - route.departOffset) / cyclerOrbit.period);
   const candidate = eventForCycle(route, currentCycle);
   if (day <= candidate.arrival) {
     return { ...candidate, nextDeparture: candidate.departure, nextArrival: candidate.arrival };
@@ -207,15 +681,8 @@ function routeEvent(route, day = state.simDays) {
   return { ...next, nextDeparture: next.departure, nextArrival: next.arrival };
 }
 
-function previousRouteEvent(route, day = state.simDays) {
-  const stopDay = stopDayFor(route.stop);
-  const cycle = Math.floor((day - stopDay - route.departOffset) / cycler.period);
-  const event = eventForCycle(route, cycle);
-  return event.arrival < day ? event : eventForCycle(route, cycle - 1);
-}
-
 function eventForCycle(route, cycle) {
-  const rendezvous = cycle * cycler.period + stopDayFor(route.stop);
+  const rendezvous = cycle * cyclerOrbit.period + stopDayFor(route.stop);
   const departure = rendezvous + route.departOffset;
   const arrival = departure + route.duration;
   return {
@@ -230,156 +697,59 @@ function eventForCycle(route, cycle) {
 }
 
 function stopDayFor(stop) {
-  return cycler.stops.find((item) => item.id === stop).day;
+  return cyclerOrbit.stops.find((item) => item.id === stop).day;
 }
 
-function getShuttlePosition(route, day = state.simDays) {
+function getShuttleWorld(route, day = state.simDays) {
   const trip = routeProgress(route, day);
-  const from = getBodyPosition(route.from, day);
-  const to = getBodyPosition(route.to, day);
+  const from = getBodyWorld(route.from, day);
+  const to = getBodyWorld(route.to, day);
   if (!trip.active) {
     const stagedForDeparture = trip.currentEvent.departure - day < 45;
     const parkedAt = stagedForDeparture ? route.from : route.to;
-    return { ...getBodyPosition(parkedAt, day), parked: true, trip };
+    return { ...getBodyWorld(parkedAt, day), parked: true, trip };
   }
   const ease = trip.progress * trip.progress * (3 - 2 * trip.progress);
-  const arc = Math.sin(Math.PI * trip.progress) * (route.stop === "earth" ? 18 : 28);
+  const bend = Math.sin(Math.PI * trip.progress) * (route.stop === "earth" ? 0.016 : 0.024);
   return {
     x: from.x + (to.x - from.x) * ease,
-    y: from.y + (to.y - from.y) * ease - arc,
+    y: from.y + (to.y - from.y) * ease - bend,
     parked: false,
     trip
   };
 }
 
-function formatDate(day) {
-  const date = new Date(startDate.getTime() + day * DAY_MS);
-  return new Intl.DateTimeFormat("en", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    timeZone: "UTC"
-  }).format(date);
-}
-
-function formatEta(days) {
-  if (days <= 0.05) return "Arriving";
-  if (days < 1) return `${Math.round(days * 24)} h`;
-  if (days < 90) return `${Math.ceil(days)} d`;
-  return `${Math.round(days / 30)} mo`;
-}
-
-function nextCyclerStop(day = state.simDays) {
-  const local = ((day % cycler.period) + cycler.period) % cycler.period;
-  const next = cycler.stops.find((stop) => stop.day > local) || cycler.stops[0];
-  const eta = next.day > local ? next.day - local : cycler.period - local + next.day;
-  return { label: next.label, eta, day: day + eta };
-}
-
-function drawSpace() {
-  const sun = screenCenter();
-  const gradient = ctx.createRadialGradient(sun.x, sun.y, 0, sun.x, sun.y, state.au * state.zoom * 3.4);
-  gradient.addColorStop(0, "rgba(255, 188, 78, 0.13)");
-  gradient.addColorStop(0.35, "rgba(48, 88, 111, 0.08)");
-  gradient.addColorStop(1, "rgba(7, 9, 13, 0)");
-  ctx.fillStyle = "#05070b";
-  ctx.fillRect(0, 0, state.width, state.height);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, state.width, state.height);
-
-  ctx.fillStyle = "rgba(255,255,255,0.45)";
-  for (let i = 0; i < 90; i++) {
-    const x = (i * 181 + 37) % state.width;
-    const y = (i * 97 + 19) % state.height;
-    const alpha = 0.14 + ((i * 13) % 60) / 180;
-    ctx.globalAlpha = alpha;
-    ctx.fillRect(x, y, i % 5 === 0 ? 1.6 : 1, i % 7 === 0 ? 1.6 : 1);
-  }
-  ctx.globalAlpha = 1;
-}
-
-function drawOrbit(orbit, color = "rgba(255,255,255,0.14)") {
-  ctx.beginPath();
-  for (let i = 0; i <= 220; i++) {
-    const mean = (i / 220) * Math.PI * 2;
-    const eccentricAnomaly = solveEccentricAnomaly(mean, orbit.eccentricity);
-    const angle = trueAnomalyFromEccentric(eccentricAnomaly, orbit.eccentricity) + orbit.argPeri;
-    const radius = orbit.semiMajor * (1 - orbit.eccentricity * Math.cos(eccentricAnomaly));
-    const p = toScreen(orbitPosition(orbit.semiMajor, angle, radius));
-    if (i === 0) ctx.moveTo(p.x, p.y);
-    else ctx.lineTo(p.x, p.y);
-  }
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 1;
-  ctx.stroke();
-}
-
-function drawCyclerTrack() {
-  ctx.beginPath();
-  for (let i = 0; i <= 260; i++) {
-    const mean = (i / 260) * Math.PI * 2;
-    const eccentricAnomaly = solveEccentricAnomaly(mean, cyclerOrbit.eccentricity);
-    const angle = trueAnomalyFromEccentric(eccentricAnomaly, cyclerOrbit.eccentricity) + cyclerOrbit.argPeri;
-    const radius = cyclerOrbit.semiMajor * (1 - cyclerOrbit.eccentricity * Math.cos(eccentricAnomaly));
-    const p = toScreen(orbitPosition(cyclerOrbit.semiMajor, angle, radius));
-    if (i === 0) ctx.moveTo(p.x, p.y);
-    else ctx.lineTo(p.x, p.y);
-  }
-  ctx.strokeStyle = "rgba(255, 208, 111, 0.3)";
-  ctx.lineWidth = 1.4;
-  ctx.setLineDash([7, 7]);
-  ctx.stroke();
-  ctx.setLineDash([]);
-}
-
-function drawRouteLine(route) {
-  const trip = routeProgress(route);
-  if (!trip.active) return;
-  const from = toScreen(getBodyPosition(route.from));
-  const to = toScreen(getBodyPosition(route.to));
-  ctx.beginPath();
-  ctx.moveTo(from.x, from.y);
-  ctx.quadraticCurveTo((from.x + to.x) / 2, (from.y + to.y) / 2 - 46 * state.zoom, to.x, to.y);
-  ctx.strokeStyle = "rgba(134, 240, 189, 0.28)";
-  ctx.lineWidth = 1.4;
-  ctx.stroke();
-}
-
-function drawLabel(name, pos, eta, color, selected = false) {
-  const text = eta ? `${name} | ETA ${eta}` : name;
+function drawLabel(name, screenPos, color, selected = false, hint = "") {
+  const text = hint ? `${name} | ${hint}` : name;
   ctx.font = selected ? "700 13px Inter, system-ui" : "600 12px Inter, system-ui";
-  const width = ctx.measureText(text).width + 16;
-  const center = screenCenter();
-  const drawLeft = pos.x > center.x + state.au * state.zoom * 0.5;
-  const x = Math.max(8, Math.min(drawLeft ? pos.x - width - 12 : pos.x + 12, state.width - width - 8));
-  let y = Math.max(pos.y - 13, 8);
-  const box = { x, y, width, height: 24 };
+  const width = Math.min(ctx.measureText(text).width + 16, Math.max(150, state.width - 28));
+  const drawLeft = screenPos.x > state.width * 0.58;
+  const x = Math.max(8, Math.min(drawLeft ? screenPos.x - width - 12 : screenPos.x + 12, state.width - width - 8));
+  const box = { x, y: Math.max(screenPos.y - 13, 8), width, height: 24 };
   let guard = 0;
   while (state.labelBoxes.some((other) => overlaps(box, other)) && guard < 14) {
     box.y += 30;
-    if (box.y + box.height > state.height - 8) box.y = Math.max(8, pos.y - 34 - guard * 30);
+    if (box.y + box.height > state.height - 8) box.y = Math.max(8, screenPos.y - 34 - guard * 30);
     guard += 1;
   }
-  y = box.y;
-  state.labelBoxes.push({ x, y, width, height: 24 });
-  const labelCenterY = y + 12;
-  const lineEndX = x > pos.x ? x : x + width;
-  if (Math.hypot(lineEndX - pos.x, labelCenterY - pos.y) > 30) {
+  state.labelBoxes.push(box);
+  const lineEndX = box.x > screenPos.x ? box.x : box.x + box.width;
+  const lineEndY = box.y + 12;
+  if (Math.hypot(lineEndX - screenPos.x, lineEndY - screenPos.y) > 30) {
     ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y);
-    ctx.lineTo(lineEndX, labelCenterY);
+    ctx.moveTo(screenPos.x, screenPos.y);
+    ctx.lineTo(lineEndX, lineEndY);
     ctx.strokeStyle = "rgba(205, 224, 239, 0.18)";
     ctx.lineWidth = 1;
     ctx.stroke();
   }
-  ctx.fillStyle = selected ? "rgba(18, 28, 36, 0.9)" : "rgba(8, 12, 17, 0.72)";
+  roundedRect(box.x, box.y, box.width, box.height, 5);
+  ctx.fillStyle = selected ? "rgba(18, 28, 36, 0.92)" : "rgba(8, 12, 17, 0.72)";
   ctx.strokeStyle = selected ? color : "rgba(255,255,255,0.12)";
-  ctx.lineWidth = 1;
-  roundedRect(x, y, width, 24, 5);
   ctx.fill();
   ctx.stroke();
   ctx.fillStyle = "#eef6ff";
-  ctx.fillText(text, x + 8, y + 16);
+  ctx.fillText(text, box.x + 8, box.y + 16, box.width - 16);
 }
 
 function overlaps(a, b) {
@@ -399,20 +769,21 @@ function roundedRect(x, y, w, h, r) {
   ctx.closePath();
 }
 
-function drawObject(item, pos, radius, color, eta = "", kind = "body", showLabel = true) {
-  const screenPos = toScreen(pos);
-  const drawRadius = Math.max(2.5, radius * Math.sqrt(state.zoom));
+function drawObject(item, worldPos, radius, color, kind = "node", labelHint = "", showLabel = true) {
+  const screenPos = worldToScreen(worldPos);
+  if (screenPos.x < -80 || screenPos.x > state.width + 80 || screenPos.y < -80 || screenPos.y > state.height + 80) return;
   const selected = state.selectedId === item.id || state.hoverId === item.id;
+  const drawRadius = Math.max(2.8, radius * Math.sqrt(state.zoom));
   ctx.beginPath();
   ctx.arc(screenPos.x, screenPos.y, drawRadius + (selected ? 5 : 0), 0, Math.PI * 2);
-  ctx.fillStyle = selected ? `${color}36` : `${color}18`;
+  ctx.fillStyle = selected ? `${color}3d` : `${color}1f`;
   ctx.fill();
 
   ctx.beginPath();
   ctx.arc(screenPos.x, screenPos.y, drawRadius, 0, Math.PI * 2);
   ctx.fillStyle = color;
   ctx.shadowColor = color;
-  ctx.shadowBlur = kind === "body" ? 12 : 18;
+  ctx.shadowBlur = kind === "body" ? 12 : 16;
   ctx.fill();
   ctx.shadowBlur = 0;
 
@@ -429,13 +800,14 @@ function drawObject(item, pos, radius, color, eta = "", kind = "body", showLabel
     ctx.stroke();
   }
 
-  if (showLabel) drawLabel(item.name, screenPos, eta, color, selected);
+  if (showLabel) drawLabel(item.name, screenPos, color, selected, labelHint);
   state.hitTargets.push({ id: item.id, x: screenPos.x, y: screenPos.y, radius: Math.max(14, drawRadius + 8) });
 }
 
 function drawSun() {
-  const center = screenCenter();
-  const pulse = 1 + Math.sin(state.simDays * 0.05) * 0.05;
+  if (!visibleInScale("sun")) return;
+  const center = worldToScreen({ x: 0, y: 0 });
+  const pulse = 1 + Math.sin(state.simDays * 0.05) * 0.04;
   const r = 17 * pulse * Math.sqrt(state.zoom);
   const glow = ctx.createRadialGradient(center.x, center.y, 0, center.x, center.y, r * 4);
   glow.addColorStop(0, "rgba(255, 221, 117, 0.95)");
@@ -445,105 +817,423 @@ function drawSun() {
   ctx.beginPath();
   ctx.arc(center.x, center.y, r * 4, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "#ffd46f";
-  ctx.beginPath();
-  ctx.arc(center.x, center.y, r, 0, Math.PI * 2);
-  ctx.fill();
-  drawLabel("Sun", center, "", "#ffd46f", state.selectedId === "sun");
-  state.hitTargets.push({ id: "sun", x: center.x, y: center.y, radius: 24 });
+  const sun = {
+    id: "sun",
+    name: "Sun",
+    type: "Star",
+    parent: "Solar System",
+    role: "Central gravity source for the displayed infrastructure network",
+    infrastructure: "Foundational"
+  };
+  drawObject(sun, { x: 0, y: 0 }, 17, "#ffd46f", "body");
 }
 
-function draw() {
+function drawOrbitView() {
+  state.hitTargets = [];
+  state.labelBoxes = [];
+  updateScaleMetrics();
+  drawSpace();
+  if (state.showOrbits) {
+    if (state.scaleMode !== "earth" && state.scaleMode !== "mars") {
+      bodies.forEach((body) => {
+        if (visibleInScale(body.id) || state.scaleMode === "ceres") drawOrbit(body);
+      });
+      drawAsteroidBelt();
+      if (visibleInScale("cycler")) drawOrbit(cyclerOrbit, "rgba(255, 208, 111, 0.34)", [8, 7]);
+    }
+    if (state.scaleMode === "earth") drawLocalOrbit("earth", 0.00257, "#d7dce3");
+    if (state.scaleMode === "mars") {
+      drawLocalOrbit("mars", 0.00085, "#9ff1c7");
+      drawLocalOrbit("mars", 0.0018, "#b8f3dd");
+    }
+  }
+
+  if (state.scaleMode !== "earth" && state.scaleMode !== "mars") {
+    routeClasses.forEach((route, index) => {
+      if (visibleInScale(route.from) || visibleInScale(route.to) || state.scaleMode === "ceres") {
+        drawCurvedRoute(route.from, route.to, `${route.color}88`, route.dash, -0.12 - index * 0.025, route.type === "Fast Transfer" ? 1.6 : 1.2);
+      }
+    });
+  }
+
+  drawSun();
+  bodies.forEach((body) => {
+    if (visibleInScale(body.id)) drawObject(body, getBodyWorld(body.id), body.radius, body.color, "body");
+  });
+  gatewayNodes.forEach((node) => {
+    if (visibleInScale(node.id)) drawObject(node, node.position(), node.radius, node.color, "node");
+  });
+  if (visibleInScale("cycler")) drawObject(cyclerOrbit, getBodyWorld("cycler"), cyclerOrbit.radius, cyclerOrbit.color, "cycler", nextCyclerStop().label);
+
+  shuttleRoutes.forEach((route) => {
+    const show = visibleInScale(route.from) || visibleInScale(route.to) || (state.scaleMode === "inner" && route.stop !== "mars");
+    if (!show) return;
+    drawShuttleRoute(route);
+    const pos = getShuttleWorld(route);
+    const eta = pos.trip.active ? formatEta(pos.trip.nextArrival - state.simDays) : `T ${formatEta(pos.trip.nextDeparture - state.simDays)}`;
+    drawObject(route, pos, pos.parked ? 3.8 : 5.2, route.color, "shuttle", eta, !pos.parked);
+  });
+}
+
+function drawLocalOrbit(parentId, distance, color) {
+  const center = getBodyWorld(parentId);
+  ctx.beginPath();
+  for (let i = 0; i <= 160; i += 1) {
+    const a = (i / 160) * Math.PI * 2;
+    const p = worldToScreen({ x: center.x + Math.cos(a) * distance, y: center.y + Math.sin(a) * distance });
+    if (i === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  }
+  ctx.strokeStyle = `${color}55`;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 8]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawShuttleRoute(route) {
+  const trip = routeProgress(route);
+  if (!trip.active && state.scaleMode !== "mars" && state.scaleMode !== "earth") return;
+  drawCurvedRoute(route.from, route.to, "rgba(134, 240, 189, 0.28)", [], route.stop === "earth" ? -0.18 : -0.26, 1.2);
+}
+
+function drawGravityView() {
   state.hitTargets = [];
   state.labelBoxes = [];
   drawSpace();
-  if (state.showOrbits) {
-    bodies.forEach((body) => drawOrbit(body));
-    drawOrbit(bodies[0], "rgba(255, 135, 178, 0.16)");
-    drawCyclerTrack();
+  drawConceptTitle("Gravity Well View", `Snapshot ${formatDate(state.conceptSnapshotDay)} | pseudo-3D effective-potential terrain.`);
+  drawPotentialSurface();
+  const nodes = [
+    { id: "earth", name: "Earth Well", x: -1.0, y: 0.1, z: -1.6, color: "#78bfff", role: "deep gravity well" },
+    { id: "leo-port", name: "LEO Port", x: -0.82, y: -0.08, z: -1.0, color: "#90f0c6", role: "exit shelf" },
+    { id: "earth-moon-l1", name: "Earth-Moon L1", x: -0.38, y: -0.05, z: -0.42, color: "#c6a7ff", role: "saddle gateway" },
+    { id: "moon", name: "Moon Well", x: 0.05, y: 0.16, z: -0.86, color: "#d7dce3", role: "secondary well" },
+    { id: "sun-earth-l1", name: "Sun-Earth L1/L2", x: 0.48, y: -0.10, z: -0.28, color: "#ffa96f", role: "solar saddle" },
+    { id: "phobos-port", name: "Mars / Phobos Shelf", x: 0.95, y: 0.22, z: -0.62, color: "#9ff1c7", role: "gateway shelf" }
+  ];
+  nodes.forEach((node) => {
+    const p = projectIso(node.x, node.y, node.z);
+    drawConceptNode(node, p.x, p.y, node.role);
+  });
+  drawConceptLegend(["Wells are steep energy costs, not just distances", "L1/L2 regions are saddle passes in the terrain", "Gateways matter because they sit on useful shelves and ridges"]);
+}
+
+function drawTransferView() {
+  state.hitTargets = [];
+  state.labelBoxes = [];
+  drawSpace();
+  drawConceptTitle("Transfer Manifold View", `Snapshot ${formatDate(state.conceptSnapshotDay)} | approximate tube sketch; better manifold engine needed.`);
+  drawManifoldTubes();
+  const nodes = [
+    { id: "sun-earth-l1", name: "Sun-Earth L1/L2", x: -0.82, y: -0.18, z: 0.02, color: "#ffa96f", role: "halo gateway" },
+    { id: "earth-moon-l1", name: "Earth-Moon L1", x: -0.42, y: 0.28, z: 0.04, color: "#c6a7ff", role: "lunar gateway" },
+    { id: "mars-cycler-point", name: "Mars Cycler Node", x: 0.38, y: -0.20, z: 0.0, color: "#ffd06f", role: "cycler intercept" },
+    { id: "phobos-port", name: "Phobos / Deimos", x: 0.72, y: 0.24, z: 0.02, color: "#9ff1c7", role: "Mars gateway" },
+    { id: "ceres", name: "Ceres Belt Hub", x: 1.08, y: -0.05, z: 0.0, color: "#c5cbd4", role: "slow cargo target" }
+  ];
+  nodes.forEach((node) => {
+    const p = projectIso(node.x, node.y, node.z);
+    drawConceptNode(node, p.x, p.y, node.role);
+  });
+  drawConceptLegend(["Halo orbits are shown as loops around saddle gateways", "Blue tubes imply slow stable/unstable manifold corridors", "Gold arcs remain fast/cycler infrastructure, not true manifolds"]);
+}
+
+function drawConceptTitle(title, subtitle) {
+  const x = state.width > 900 ? Math.max(420, state.width * 0.34) : 24;
+  const y = state.width > 900 ? 112 : 360;
+  ctx.fillStyle = "#f4f7fb";
+  ctx.font = "700 24px Inter, system-ui";
+  ctx.fillText(title, x, y);
+  ctx.fillStyle = "#b8c6d6";
+  ctx.font = "500 14px Inter, system-ui";
+  ctx.fillText(subtitle, x, y + 26);
+}
+
+function projectIso(x, y, z = 0) {
+  const angle = state.concept.rotation;
+  const rotated = {
+    x: x * Math.cos(angle) - y * Math.sin(angle),
+    y: x * Math.sin(angle) + y * Math.cos(angle)
+  };
+  const scale = Math.min(state.width, state.height) * (state.width > 900 ? 0.27 : 0.34) * state.concept.zoom;
+  const origin = {
+    x: (state.width > 900 ? state.width * 0.55 : state.width * 0.53) + state.concept.pan.x,
+    y: (state.width > 900 ? state.height * 0.52 : state.height * 0.58) + state.concept.pan.y
+  };
+  return {
+    x: origin.x + (rotated.x - rotated.y) * scale * 0.92,
+    y: origin.y + (rotated.x + rotated.y) * scale * state.concept.pitch - z * scale * 0.52
+  };
+}
+
+function effectivePotential(x, y) {
+  const wells = [
+    { x: -1.0, y: 0.1, mass: 1.35, soft: 0.10 },
+    { x: 0.05, y: 0.16, mass: 0.46, soft: 0.09 },
+    { x: 0.95, y: 0.22, mass: 0.62, soft: 0.14 }
+  ];
+  const centrifugal = 0.16 * (x * x + y * y);
+  const pull = wells.reduce((sum, well) => {
+    const d = Math.hypot(x - well.x, y - well.y) + well.soft;
+    return sum - well.mass / d;
+  }, 0);
+  return Math.max(-1.65, Math.min(0.58, pull * 0.34 + centrifugal));
+}
+
+function drawPotentialSurface() {
+  const step = 0.18;
+  ctx.lineWidth = 1;
+  for (let y = -0.75; y <= 0.78; y += step) {
+    ctx.beginPath();
+    for (let x = -1.35; x <= 1.32; x += step) {
+      const z = effectivePotential(x, y);
+      const p = projectIso(x, y, z);
+      if (x <= -1.34) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    }
+    ctx.strokeStyle = "rgba(119, 203, 255, 0.16)";
+    ctx.stroke();
   }
-  shuttleRoutes.forEach(drawRouteLine);
-  drawSun();
+  for (let x = -1.35; x <= 1.32; x += step) {
+    ctx.beginPath();
+    for (let y = -0.75; y <= 0.78; y += step) {
+      const z = effectivePotential(x, y);
+      const p = projectIso(x, y, z);
+      if (y <= -0.74) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    }
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.10)";
+    ctx.stroke();
+  }
+  drawContour(-0.70, "rgba(198, 167, 255, 0.32)");
+  drawContour(-0.42, "rgba(255, 169, 111, 0.30)");
+}
 
-  bodies.forEach((body) => {
-    const pos = getBodyPosition(body.id);
-    drawObject(body, pos, body.radius, body.color, "", "body");
-  });
+function drawContour(level, color) {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.2;
+  ctx.setLineDash([4, 8]);
+  for (let y = -0.7; y <= 0.72; y += 0.14) {
+    ctx.beginPath();
+    let started = false;
+    for (let x = -1.3; x <= 1.28; x += 0.07) {
+      const z = effectivePotential(x, y);
+      if (Math.abs(z - level) < 0.035) {
+        const p = projectIso(x, y, z + 0.03);
+        if (!started) {
+          ctx.moveTo(p.x, p.y);
+          started = true;
+        } else {
+          ctx.lineTo(p.x, p.y);
+        }
+      } else {
+        started = false;
+      }
+    }
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+}
 
-  lagrangePoints.forEach((point) => {
-    const pos = getLagrangePosition(point);
-    drawObject(point, pos, 4.2, point.color, "", "point");
-  });
+function drawManifoldTubes() {
+  drawHaloLoop(-0.82, -0.18, "#ffa96f");
+  drawHaloLoop(-0.42, 0.28, "#c6a7ff");
+  drawHaloLoop(0.72, 0.24, "#9ff1c7");
+  drawManifoldPath([
+    [-0.82, -0.18, 0.12],
+    [-0.52, -0.42, 0.34],
+    [-0.08, -0.26, 0.44],
+    [0.38, -0.20, 0.18],
+    [0.72, 0.24, 0.08]
+  ], "#8da7ff", 13);
+  drawManifoldPath([
+    [-0.42, 0.28, 0.10],
+    [-0.18, 0.50, 0.30],
+    [0.24, 0.42, 0.32],
+    [0.72, 0.24, 0.10],
+    [1.08, -0.05, 0.02]
+  ], "#7ee0ff", 10);
+  drawManifoldPath([
+    [-0.88, -0.12, -0.02],
+    [-0.22, -0.58, 0.08],
+    [0.38, -0.20, 0.06],
+    [1.08, -0.05, 0.00]
+  ], "#ffd06f", 6, []);
+}
 
-  const cyclerStop = nextCyclerStop();
-  drawObject(cycler, getCyclerPosition(), cycler.radius, cycler.color, "", "cycler");
+function drawHaloLoop(cx, cy, color) {
+  ctx.beginPath();
+  for (let i = 0; i <= 120; i += 1) {
+    const a = (i / 120) * Math.PI * 2;
+    const p = projectIso(cx + Math.cos(a) * 0.13, cy + Math.sin(a) * 0.08, Math.sin(a) * 0.12);
+    if (i === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  }
+  ctx.strokeStyle = `${color}aa`;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
 
-  shuttleRoutes.forEach((route) => {
-    const pos = getShuttlePosition(route);
-    const eta = pos.trip.active ? formatEta(pos.trip.nextArrival - state.simDays) : `Dep ${formatEta(pos.trip.nextDeparture - state.simDays)}`;
-    drawObject(route, pos, pos.parked ? 3.8 : 5.2, route.color, eta, "shuttle", !pos.parked);
-  });
+function drawManifoldPath(points, color, width, dash = [9, 10]) {
+  for (let offset = -1; offset <= 1; offset += 1) {
+    ctx.beginPath();
+    points.forEach((point, index) => {
+      const p = projectIso(point[0], point[1] + offset * 0.035, point[2] + Math.abs(offset) * 0.04);
+      if (index === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    });
+    ctx.strokeStyle = offset === 0 ? `${color}a8` : `${color}38`;
+    ctx.lineWidth = offset === 0 ? width * 0.22 : width * 0.12;
+    ctx.setLineDash(dash);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+}
 
+function drawConceptNode(item, x, y, hint) {
+  const selected = state.selectedId === item.id || state.hoverId === item.id;
+  ctx.beginPath();
+  ctx.arc(x, y, selected ? 18 : 14, 0, Math.PI * 2);
+  ctx.fillStyle = `${item.color}30`;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x, y, 6, 0, Math.PI * 2);
+  ctx.fillStyle = item.color;
+  ctx.shadowColor = item.color;
+  ctx.shadowBlur = 15;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  drawLabel(item.name, { x, y }, item.color, selected, hint);
+  state.hitTargets.push({ id: item.id, x, y, radius: 22 });
+}
+
+function drawEnergyDrop(x, y, depth, index) {
+  if (index === 0) return;
+  ctx.fillStyle = depth > 0.55 ? "rgba(255, 169, 111, 0.58)" : "rgba(141, 167, 255, 0.52)";
+  ctx.font = "700 12px Inter, system-ui";
+  ctx.fillText(depth > 0.55 ? "higher delta-v" : "lower-energy step", x - 45, y + 36);
+}
+
+function drawTube(from, to, color, dash, bend) {
+  const fx = from.x * state.width;
+  const fy = from.y * state.height;
+  const tx = to.x * state.width;
+  const ty = to.y * state.height;
+  ctx.beginPath();
+  ctx.moveTo(fx, fy);
+  ctx.quadraticCurveTo((fx + tx) / 2, (fy + ty) / 2 + bend, tx, ty);
+  ctx.strokeStyle = `${color}55`;
+  ctx.lineWidth = dash.length ? 2.2 : 2.8;
+  ctx.setLineDash(dash);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawConceptLegend(items) {
+  const x = state.width > 900 ? Math.max(420, state.width * 0.34) : 24;
+  const y = state.height - 92;
+  ctx.fillStyle = "rgba(8, 12, 17, 0.72)";
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  roundedRect(x, y, Math.min(560, state.width - x * 2), 62, 7);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#d9e3ef";
+  ctx.font = "600 13px Inter, system-ui";
+  items.forEach((item, index) => ctx.fillText(item, x + 16, y + 20 + index * 16));
+}
+
+function draw() {
+  if (state.viewMode === "orbit") drawOrbitView();
+  if (state.viewMode === "gravity") drawGravityView();
+  if (state.viewMode === "manifold") drawTransferView();
   updateHud();
   updateSchedule();
 }
 
 function updateHud() {
   simDateEl.textContent = formatDate(state.simDays);
-  statusPill.textContent = state.paused ? "Paused" : "Running";
-  statusPill.style.color = state.paused ? "#ffd06f" : "#79e4b0";
+  const conceptual = state.viewMode !== "orbit";
+  statusPill.textContent = conceptual ? "Concept" : state.paused ? "Paused" : "Running";
+  statusPill.style.color = conceptual ? "#8fd4ff" : state.paused ? "#ffd06f" : "#79e4b0";
+  pauseButton.disabled = conceptual;
+  orbitToggle.disabled = conceptual;
+  scaleButtons.forEach((button) => {
+    button.disabled = conceptual;
+    button.setAttribute("aria-disabled", String(conceptual));
+  });
   if (state.selectedId) updateInspector(state.selectedId);
 }
 
 function describeObject(id) {
   if (id === "sun") {
-    return { name: "Sun", route: "System barycenter for all displayed routes.", arrival: "--", eta: "--" };
+    return objectInfo({
+      id,
+      name: "Sun",
+      type: "Star",
+      parent: "Solar System",
+      role: "Central gravity source for all displayed infrastructure routes",
+      infrastructure: "Foundational"
+    }, "--");
   }
   const body = bodies.find((item) => item.id === id);
-  if (body) {
-    return { name: body.name, route: `${body.route}. Orbital period ${formatOrbitalPeriod(body.period)}.`, arrival: "--", eta: "--" };
-  }
-  const point = lagrangePoints.find((item) => item.id === id);
-  if (point) {
-    return { name: point.name, route: point.route, arrival: "Co-orbits with Earth", eta: "--" };
-  }
+  if (body) return objectInfo(body, `${angleDegrees(bodyAngle(body))} deg / ${formatOrbitalPeriod(body.period)}`);
+  const node = gatewayNodes.find((item) => item.id === id);
+  if (node) return objectInfo(node, positionSummary(node.position()));
   if (id === "cycler") {
     const stop = nextCyclerStop();
-    return { name: cycler.name, route: `${cycler.route}. Next ${stop.label.toLowerCase()} in ${formatEta(stop.eta)}.`, arrival: stop.label, eta: "--" };
+    return objectInfo(cyclerOrbit, `${stop.label} in ${formatEta(stop.eta)}`, stop.label, formatEta(stop.eta));
   }
   const shuttle = shuttleRoutes.find((item) => item.id === id);
   if (shuttle) {
     const trip = routeProgress(shuttle);
-    const from = labelFor(shuttle.from);
-    const to = labelFor(shuttle.to);
     const arrivalDay = trip.active ? trip.nextArrival : trip.nextDeparture + shuttle.duration;
-    return {
-      name: shuttle.name,
-      route: `${from} -> ${to}. ${trip.currentEvent.window}; ${trip.active ? "in transfer now" : "next launch window is staged to the cycler flyby"}.`,
-      arrival: formatDate(arrivalDay),
-      eta: formatEta(arrivalDay - state.simDays)
-    };
+    return objectInfo(
+      shuttle,
+      trip.active ? "in transfer" : "staged for next window",
+      `${trip.active ? "Arrives" : "Launches"} ${formatDate(trip.active ? arrivalDay : trip.nextDeparture)}`,
+      formatEta((trip.active ? arrivalDay : trip.nextDeparture) - state.simDays)
+    );
   }
+  const route = routeClasses.find((item) => item.id === id);
+  if (route) return objectInfo(route, "conceptual route class");
   return null;
 }
 
-function formatOrbitalPeriod(days) {
-  return days < 800 ? `${Math.round(days)} d` : `${(days / 365.25).toFixed(1)} y`;
+function objectInfo(item, phase, nextEvent = "--", eta = "--") {
+  const connected = connectedRoutes(item.id);
+  return {
+    name: item.name,
+    lead: item.role,
+    details: [
+      ["Type", item.type || "Infrastructure node"],
+      ["Role", item.role],
+      ["Parent system", item.parent || "--"],
+      ["Position / phase", phase],
+      ["Next event", nextEvent],
+      ["Connected routes", connected.length ? connected.join(", ") : "--"],
+      ["Infrastructure potential", item.infrastructure || "Medium"],
+      ["ETA", eta]
+    ]
+  };
 }
 
-function labelFor(id) {
-  if (id === "cycler") return cycler.name;
-  const body = bodies.find((item) => item.id === id);
-  return body ? body.name : id;
+function connectedRoutes(id) {
+  return [...routeClasses, ...shuttleRoutes]
+    .filter((route) => route.from === id || route.to === id || (id === "cycler" && (route.from === "cycler" || route.to === "cycler")))
+    .map((route) => route.name);
 }
 
 function updateInspector(id) {
   const info = describeObject(id);
   if (!info) return;
   inspectName.textContent = info.name;
-  inspectRoute.textContent = info.route;
-  inspectArrival.textContent = info.arrival;
-  inspectEta.textContent = info.eta;
+  inspectRoute.textContent = info.lead;
+  inspectDetails.innerHTML = info.details.map(([label, value]) => `
+    <div>
+      <dt>${label}</dt>
+      <dd>${value}</dd>
+    </div>
+  `).join("");
 }
 
 function updateSchedule() {
@@ -575,10 +1265,10 @@ function updateSchedule() {
 }
 
 function setZoom(nextZoom, anchor = { x: state.width / 2, y: state.height / 2 }) {
-  const clamped = Math.max(0.55, Math.min(3.5, nextZoom));
-  const before = fromScreen(anchor);
+  const clamped = Math.max(0.55, Math.min(3.8, nextZoom));
+  const before = screenToWorld(anchor);
   state.zoom = clamped;
-  const after = toScreen(before);
+  const after = worldToScreen(before);
   state.pan.x += anchor.x - after.x;
   state.pan.y += anchor.y - after.y;
 }
@@ -594,7 +1284,8 @@ function selectAt(point) {
 function tick(now) {
   const elapsed = Math.min(80, now - lastFrame);
   lastFrame = now;
-  if (!state.paused) {
+  updateCameraTransition(now);
+  if (!state.paused && state.viewMode === "orbit") {
     state.simDays += (elapsed / 1000) * state.speed * 0.08;
   }
   draw();
@@ -606,6 +1297,39 @@ function setSpeed(speed) {
   speedButtons.forEach((button) => button.classList.toggle("active", Number(button.dataset.speed) === speed));
 }
 
+function setViewMode(mode) {
+  state.viewMode = mode;
+  state.selectedId = null;
+  if (mode !== "orbit") {
+    state.conceptSnapshotDay = state.simDays;
+    state.concept.rotation = mode === "gravity" ? -0.22 : 0.12;
+    state.concept.pitch = mode === "gravity" ? 0.34 : 0.28;
+    state.concept.zoom = 1;
+    state.concept.pan = { x: 0, y: 0 };
+  }
+  document.body.dataset.viewMode = mode;
+  modeButtons.forEach((button) => button.classList.toggle("active", button.dataset.viewMode === mode));
+  canvas.style.cursor = mode === "orbit" ? "grab" : "default";
+  updateInspector(mode === "gravity" ? "leo-port" : mode === "manifold" ? "sun-earth-l1" : "earth");
+}
+
+function setScaleMode(mode) {
+  state.scaleMode = mode;
+  scaleButtons.forEach((button) => button.classList.toggle("active", button.dataset.scaleMode === mode));
+  state.zoom = 1;
+  state.pan = { x: 0, y: 0 };
+  startCameraTransition(mode);
+  const representatives = {
+    solar: "earth",
+    inner: "cycler",
+    earth: "leo-port",
+    mars: "phobos-port",
+    ceres: "ceres"
+  };
+  state.selectedId = representatives[mode] || "earth";
+  updateInspector(state.selectedId);
+}
+
 function pointerPosition(event) {
   const rect = canvas.getBoundingClientRect();
   return {
@@ -615,17 +1339,69 @@ function pointerPosition(event) {
 }
 
 function hitTest(point) {
-  for (let i = state.hitTargets.length - 1; i >= 0; i--) {
+  for (let i = state.hitTargets.length - 1; i >= 0; i -= 1) {
     const target = state.hitTargets[i];
-    const dx = point.x - target.x;
-    const dy = point.y - target.y;
-    if (Math.hypot(dx, dy) <= target.radius) return target.id;
+    if (Math.hypot(point.x - target.x, point.y - target.y) <= target.radius) return target.id;
   }
   return null;
 }
 
+function labelFor(id) {
+  if (id === "cycler") return cyclerOrbit.name;
+  const body = bodies.find((item) => item.id === id);
+  if (body) return body.name;
+  const node = gatewayNodes.find((item) => item.id === id);
+  if (node) return node.name;
+  return id;
+}
+
+function formatDate(day) {
+  const date = new Date(startDate.getTime() + day * DAY_MS);
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    timeZone: "UTC"
+  }).format(date);
+}
+
+function formatEta(days) {
+  if (days <= 0.05) return "Arriving";
+  if (days < 1) return `${Math.round(days * 24)} h`;
+  if (days < 90) return `${Math.ceil(days)} d`;
+  return `${Math.round(days / 30)} mo`;
+}
+
+function nextCyclerStop(day = state.simDays) {
+  const local = ((day % cyclerOrbit.period) + cyclerOrbit.period) % cyclerOrbit.period;
+  const next = cyclerOrbit.stops.find((stop) => stop.day > local) || cyclerOrbit.stops[0];
+  const eta = next.day > local ? next.day - local : cyclerOrbit.period - local + next.day;
+  return { label: next.label, eta, day: day + eta };
+}
+
+function formatOrbitalPeriod(days) {
+  return days < 800 ? `${Math.round(days)} d` : `${(days / 365.25).toFixed(1)} y`;
+}
+
+function angleDegrees(angle) {
+  const normalized = ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+  return Math.round((normalized * 180) / Math.PI);
+}
+
+function positionSummary(pos) {
+  return `${pos.x.toFixed(3)} AU, ${pos.y.toFixed(3)} AU`;
+}
+
 speedButtons.forEach((button) => {
   button.addEventListener("click", () => setSpeed(Number(button.dataset.speed)));
+});
+
+modeButtons.forEach((button) => {
+  button.addEventListener("click", () => setViewMode(button.dataset.viewMode));
+});
+
+scaleButtons.forEach((button) => {
+  button.addEventListener("click", () => setScaleMode(button.dataset.scaleMode));
 });
 
 pauseButton.addEventListener("click", () => {
@@ -646,7 +1422,11 @@ canvas.addEventListener("wheel", (event) => {
   event.preventDefault();
   const point = pointerPosition(event);
   const factor = event.deltaY > 0 ? 0.88 : 1.14;
-  setZoom(state.zoom * factor, point);
+  if (state.viewMode === "orbit") {
+    setZoom(state.zoom * factor, point);
+    return;
+  }
+  state.concept.zoom = Math.max(0.55, Math.min(2.6, state.concept.zoom * factor));
 }, { passive: false });
 
 canvas.addEventListener("pointerdown", (event) => {
@@ -654,27 +1434,42 @@ canvas.addEventListener("pointerdown", (event) => {
   state.dragging = true;
   state.dragStart = point;
   state.dragPanStart = { ...state.pan };
+  state.conceptDragStart = {
+    rotation: state.concept.rotation,
+    pitch: state.concept.pitch,
+    pan: { ...state.concept.pan },
+    mode: event.shiftKey || event.altKey ? "pan" : "rotate"
+  };
   canvas.setPointerCapture(event.pointerId);
 });
 
 canvas.addEventListener("pointermove", (event) => {
   const point = pointerPosition(event);
   if (state.dragging) {
-    state.pan.x = state.dragPanStart.x + point.x - state.dragStart.x;
-    state.pan.y = state.dragPanStart.y + point.y - state.dragStart.y;
+    if (state.viewMode === "orbit") {
+      state.pan.x = state.dragPanStart.x + point.x - state.dragStart.x;
+      state.pan.y = state.dragPanStart.y + point.y - state.dragStart.y;
+    } else if (state.conceptDragStart?.mode === "pan") {
+      state.concept.pan.x = state.conceptDragStart.pan.x + point.x - state.dragStart.x;
+      state.concept.pan.y = state.conceptDragStart.pan.y + point.y - state.dragStart.y;
+    } else {
+      state.concept.rotation = state.conceptDragStart.rotation + (point.x - state.dragStart.x) * 0.008;
+      state.concept.pitch = Math.max(0.18, Math.min(0.54, state.conceptDragStart.pitch + (point.y - state.dragStart.y) * 0.0018));
+    }
     canvas.style.cursor = "grabbing";
     return;
   }
   state.hoverId = hitTest(point);
-  canvas.style.cursor = state.hoverId ? "pointer" : "grab";
+  canvas.style.cursor = state.hoverId ? "pointer" : state.viewMode === "orbit" ? "grab" : "default";
 });
 
 canvas.addEventListener("pointerup", (event) => {
   const point = pointerPosition(event);
   const moved = Math.hypot(point.x - state.dragStart.x, point.y - state.dragStart.y) > 5;
   state.dragging = false;
+  state.conceptDragStart = null;
   canvas.releasePointerCapture(event.pointerId);
-  canvas.style.cursor = "grab";
+  canvas.style.cursor = state.viewMode === "orbit" ? "grab" : "default";
   if (!moved) selectAt(point);
 });
 
@@ -696,4 +1491,6 @@ scheduleList.addEventListener("click", (event) => {
 window.addEventListener("resize", resize);
 resize();
 setSpeed(10);
+document.body.dataset.viewMode = state.viewMode;
+updateInspector("earth");
 requestAnimationFrame(tick);
