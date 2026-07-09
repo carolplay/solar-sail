@@ -117,3 +117,52 @@ Target Version: Project memory / ongoing process
 
 - Use `docs/proposal-workflow.md` as the project process reference.
 - Apply the loop to Demo 003: economy brainstorm/research -> proposal -> spec -> feedback.
+
+## 2026-07-09 - Demo 002.5 Physical Coherence Direction
+
+### Decisions
+
+- Start Demo 002.5 as a proposal, not a spec.
+- Reframe Demo 002.5 from "3D physics and data pipeline decision" to "physical coherence pass."
+- Treat Three.js, ephemeris JSON, and CR3BP work as possible tools, not the purpose of 002.5.
+- Focus 002.5 on coordinate frames, scale contracts, route-line meaning, cycler honesty, and concept-view boundaries.
+- Add `docs/demo-002-5-physical-coherence-proposal.md`.
+
+### Rationale
+
+- Demo 002 improved labeling and explanations, but some visible physical relationships still do not make sense.
+- More labels are not enough if the visuals still imply stronger physical claims than the model supports.
+- Demo 003 economics would sit on weak ground if the physical layer remains incoherent.
+- A 3D implementation could make weak physics look more authoritative unless the model contract is fixed first.
+
+### Open Questions
+
+- Should concept views remain primary modes or move into secondary explanation/research surfaces?
+- Should the cycler become a schedule lane, a stylized orbit, or a hybrid?
+- Is documented Keplerian data enough for 002.5, or does the spec need an ephemeris JSON experiment?
+- Should local gateway views become separate modes, atlas sheets, or inset diagrams?
+
+### Next Actions
+
+- Discuss the 002.5 proposal and choose the coordinate / scale contract.
+- Pick the route claim taxonomy before writing the 002.5 spec.
+- Decide the cycler representation direction before implementation.
+
+## 2026-07-09 - Permission and Global Memory Intent
+
+### Decisions
+
+- The user intends Codex to have broad write access while working on this project.
+- Reusable lessons from using the project brainstorm process should be added to the global brainstorm skill or equivalent global memory when possible.
+- Runtime permissions still need to be verified before writing outside the workspace.
+- Avoid creating duplicate project-side placeholder docs for global skill updates unless explicitly requested.
+
+### Rationale
+
+- The desired workflow is direct update of the canonical artifact, not scattered synchronization notes.
+- User authorization and runtime sandbox capability are separate. The project should record the authorization intent while still respecting actual tool permissions.
+
+### Next Actions
+
+- When a session has writable access to `/Users/guoya/.codex/skills/brainstorm-recorder`, update that skill directly with the Proposal-Spec-Feedback loop.
+- Keep `docs/proposal-workflow.md` as the current local source of truth until the global skill is writable.

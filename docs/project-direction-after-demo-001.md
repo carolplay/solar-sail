@@ -184,20 +184,21 @@ Execution cut:
 - It may use documented Keplerian elements tied to an epoch instead of a full ephemeris pipeline.
 - 3D gravity wells, CR3BP manifold tubes, SPICE/Skyfield/JPL data pipelines, and sampled cycler trajectories should be researched but not required for Demo 002 completion.
 
-### Demo 002.5: 3D Physics and Data Pipeline Decision
+### Demo 002.5: Physical Coherence Pass
 
-Goal: turn the Demo 002 research findings into a concrete technical direction for higher-credibility physics views and data generation.
+Goal: make the viewer physically coherent at each scale before adding economic pressure or deeper 3D physics.
 
 Primary ideas:
 
-- decide whether Three.js is needed for concept views only or for a broader 3D scene architecture
-- prototype a 3D gravity-well surface if research supports it
-- prototype simplified low-energy route tubes inspired by invariant manifolds
-- generate compact offline ephemeris JSON for browser interpolation
-- research sampled Earth-Mars cycler paths beyond the stylized ellipse
-- evaluate CR3BP reference implementations and precomputed static geometry
-- expand probe and science-mission layers after the route-atlas layer system stabilizes
-- keep all 3D and advanced physics claims clearly labeled unless they are backed by real data
+- define a coordinate and scale contract for heliocentric, planet-local, route-atlas, and conceptual views
+- distinguish physical geometry, schematic local layout, service schedule, route class, and teaching diagram
+- make route-line meaning explicit so users know whether a line is a path, a service pattern, or a concept
+- revisit the cycler so it reads as scheduled infrastructure rather than a confident exact ellipse
+- decide whether concept views remain primary modes or become secondary explanation/research surfaces
+- optionally scope ephemeris JSON or Three.js spikes only after the model contract is clear
+- keep all advanced physics claims visibly tied to their actual model and data provenance
+
+See `docs/demo-002-5-physical-coherence-proposal.md`.
 
 ### Demo 003: Network Metrics / Infrastructure Potential
 

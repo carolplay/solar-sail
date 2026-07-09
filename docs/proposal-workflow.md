@@ -171,3 +171,27 @@ For small cycles, one file may contain all three sections if that keeps the proj
 If producing a proposal requires reading attached notes, deployed pages, external research, or files outside the current writable workspace, request the smallest required permission before relying on those sources.
 
 The same rule applies to spec and feedback. Do not claim implementation success, research support, or deployment behavior without the required local, browser, network, or filesystem access.
+
+## Project Permission Intent
+
+The user intends Codex to have broad write access while working on this project, including the ability to update reusable project/process memory such as personal brainstorm skills.
+
+Execution rule:
+
+- Treat broad write access as user intent, not as proof of runtime capability.
+- Before editing outside the current workspace, verify that the path is actually writable in the active sandbox.
+- If the runtime cannot write the intended global path, do not create duplicate workaround documents in the project unless the user explicitly wants a temporary artifact.
+- Prefer updating the canonical artifact directly once permissions are available.
+
+## Global Learning Rule
+
+When the project brainstorm process produces reusable operating lessons, add them to the canonical global skill or memory artifact when possible.
+
+Examples:
+
+- proposal/spec/feedback workflow improvements
+- permission-handling lessons
+- recurring documentation conventions
+- rules for when brainstorm should reopen instead of forcing implementation
+
+If global memory cannot be updated because of runtime permissions, record the blocker in the final response and keep the project docs as the canonical local record.
