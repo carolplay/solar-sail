@@ -13,6 +13,9 @@ const inspectDetails = document.getElementById("inspectDetails");
 const scheduleList = document.getElementById("scheduleList");
 const modelBadge = document.getElementById("modelBadge");
 const modelNote = document.getElementById("modelNote");
+const frameBadge = document.getElementById("frameBadge");
+const scaleBadge = document.getElementById("scaleBadge");
+const routeBadge = document.getElementById("routeBadge");
 const articleButton = document.getElementById("articleButton");
 const articleDrawer = document.getElementById("articleDrawer");
 const articleTitle = document.getElementById("articleTitle");
@@ -21,8 +24,27 @@ const articleClose = document.getElementById("articleClose");
 const speedButtons = Array.from(document.querySelectorAll(".speed-button"));
 const modeButtons = Array.from(document.querySelectorAll(".mode-button"));
 const scaleButtons = Array.from(document.querySelectorAll(".scale-button"));
+const languageButtons = Array.from(document.querySelectorAll(".language-button"));
 const layerToggles = Array.from(document.querySelectorAll("[data-layer]"));
 const sheetButtons = Array.from(document.querySelectorAll("[data-sheet-state]"));
+const reviewMenu = document.getElementById("reviewMenu");
+const reviewDrawer = document.getElementById("reviewDrawer");
+const reviewClose = document.getElementById("reviewClose");
+const reviewForm = document.getElementById("reviewForm");
+const reviewTitle = document.getElementById("reviewTitle");
+const reviewEyebrow = document.getElementById("reviewEyebrow");
+const reviewPrompt = document.getElementById("reviewPrompt");
+const reviewPromptLabel = document.getElementById("reviewPromptLabel");
+const reviewFeedback = document.getElementById("reviewFeedback");
+const reviewFeedbackWrap = document.getElementById("reviewFeedbackWrap");
+const reviewFeedbackLabel = document.getElementById("reviewFeedbackLabel");
+const reviewRatingGroup = document.getElementById("reviewRatingGroup");
+const reviewRatingButtons = Array.from(document.querySelectorAll(".rating-button"));
+const reviewSnapshot = document.getElementById("reviewSnapshot");
+const reviewSnapshotLabel = document.getElementById("reviewSnapshotLabel");
+const reviewSubmit = document.getElementById("reviewSubmit");
+const reviewCancel = document.getElementById("reviewCancel");
+const reviewStatus = document.getElementById("reviewStatus");
 
 const DAY_MS = 86400000;
 const modelEpochLabel = "2026-07-09";
@@ -50,6 +72,10 @@ const state = {
   scaleMode: "solar",
   selectedId: null,
   hoverId: null,
+  language: "en",
+  reviewAction: "question",
+  reviewTargetId: null,
+  reviewRating: "",
   width: 0,
   height: 0,
   dpr: 1,
@@ -77,48 +103,195 @@ const state = {
   labelBoxes: []
 };
 
+const translations = {
+  en: {
+    appTitle: "Solar Infrastructure Viewer",
+    frameLabel: "Frame",
+    scaleLabel: "Scale",
+    routesLabel: "Routes",
+    orbitView: "Orbit View",
+    gravityView: "Gravity Well View",
+    lowEnergyView: "Low-Energy Routes View",
+    solarSystem: "Solar System",
+    innerSystem: "Inner System",
+    earthGateway: "Earth Gateway",
+    marsGateway: "Mars Gateway",
+    ceresBelt: "Ceres / Belt",
+    atlasLayers: "Atlas Layers",
+    layerPlanets: "Planets",
+    layerNodes: "Nodes",
+    layerLagrange: "Lagrange",
+    layerCyclers: "Cyclers",
+    layerFast: "Fast",
+    layerLowEnergy: "Low energy",
+    layerProbes: "Probes",
+    layerLabels: "Labels",
+    orbitsToggle: "Orbits",
+    inspection: "Inspection",
+    openExplanation: "Open explanation",
+    shuttleSchedule: "Shuttle Schedule",
+    explanation: "Explanation",
+    askAboutThis: "Ask about this",
+    leaveFeedback: "Leave feedback",
+    offlineReview: "Offline Review",
+    questionTitle: "Ask about this",
+    feedbackTitle: "Leave feedback",
+    questionLabel: "Question",
+    feedbackSummaryLabel: "Feedback summary",
+    feedbackDetailLabel: "Feedback detail",
+    includeSnapshot: "Include canvas snapshot",
+    saveLocally: "Save locally",
+    saving: "Saving...",
+    savedQuestion: "Saved to operations/questions-local.jsonl",
+    savedFeedback: "Saved to operations/feedback-local.jsonl",
+    saveFailed: "Could not save. Use the local preview server, not GitHub Pages.",
+    cancel: "Cancel",
+    ratingGood: "Good",
+    ratingNeedsWork: "Needs work",
+    running: "Running",
+    paused: "Paused",
+    research: "Research",
+    eta: "ETA",
+    timePrefix: "T",
+    arriving: "Arriving",
+    selectObject: "Select an object",
+    inspectHint: "Click a planet, station point, cycler, or shuttle to inspect its route.",
+    legendPhysicalOrbit: "Physical orbit",
+    legendTransferClass: "Transfer class",
+    legendServiceSchedule: "Service schedule",
+    legendConceptCorridor: "Concept corridor",
+    legendSchematicNode: "Schematic node"
+  },
+  zh: {
+    appTitle: "太阳系基础设施视图",
+    frameLabel: "坐标框架",
+    scaleLabel: "尺度",
+    routesLabel: "路线",
+    orbitView: "轨道视图",
+    gravityView: "能量井视图",
+    lowEnergyView: "低能路线视图",
+    solarSystem: "太阳系",
+    innerSystem: "内太阳系",
+    earthGateway: "地球门户",
+    marsGateway: "火星门户",
+    ceresBelt: "谷神星 / 小行星带",
+    atlasLayers: "图层",
+    layerPlanets: "行星",
+    layerNodes: "节点",
+    layerLagrange: "拉格朗日",
+    layerCyclers: "循环器",
+    layerFast: "快速",
+    layerLowEnergy: "低能",
+    layerProbes: "探测器",
+    layerLabels: "标签",
+    orbitsToggle: "轨道",
+    inspection: "检查",
+    openExplanation: "打开解释",
+    shuttleSchedule: "穿梭时刻表",
+    explanation: "解释",
+    askAboutThis: "提问",
+    leaveFeedback: "反馈",
+    offlineReview: "离线勘查",
+    questionTitle: "提出问题",
+    feedbackTitle: "记录反馈",
+    questionLabel: "问题",
+    feedbackSummaryLabel: "反馈摘要",
+    feedbackDetailLabel: "反馈细节",
+    includeSnapshot: "附带画布截图",
+    saveLocally: "保存到本地",
+    saving: "保存中...",
+    savedQuestion: "已保存到 operations/questions-local.jsonl",
+    savedFeedback: "已保存到 operations/feedback-local.jsonl",
+    saveFailed: "保存失败。需要使用本地 preview server，而不是 GitHub Pages。",
+    cancel: "取消",
+    ratingGood: "可用",
+    ratingNeedsWork: "需要改",
+    running: "运行中",
+    paused: "已暂停",
+    research: "研究",
+    eta: "到达",
+    timePrefix: "T",
+    arriving: "正在到达",
+    selectObject: "选择对象",
+    inspectHint: "点击行星、站点、循环器或穿梭路线来检查。",
+    legendPhysicalOrbit: "物理轨道",
+    legendTransferClass: "转移类型",
+    legendServiceSchedule: "服务时刻",
+    legendConceptCorridor: "概念通道",
+    legendSchematicNode: "示意节点"
+  }
+};
+
+function t(key) {
+  return translations[state.language]?.[key] || translations.en[key] || key;
+}
+
 const viewModels = {
   orbit: {
     label: "Ephemeris-like / approximate",
-    note: `Epoch ${modelEpochLabel}. Keplerian browser model; spacecraft routes are schematic.`
+    note: `Epoch ${modelEpochLabel}. Keplerian browser model; spacecraft routes are classified overlays.`,
+    frame: "Heliocentric map",
+    scale: "AU positions",
+    routes: "Typed atlas overlay"
   },
   gravity: {
     label: "Conceptual / research placeholder",
-    note: "Pseudo-3D teaching surface; not a computed delta-v or potential-energy model."
+    note: "Pseudo-3D teaching surface; not a computed delta-v or potential-energy model.",
+    frame: "Concept diagram",
+    scale: "Energy metaphor",
+    routes: "No route geometry"
   },
   manifold: {
     label: "Conceptual / research placeholder",
-    note: "Manifold-inspired route sketch; CR3BP tubes are not numerically solved."
+    note: "Manifold-inspired route sketch; CR3BP tubes are not numerically solved.",
+    frame: "Concept diagram",
+    scale: "Not spatial scale",
+    routes: "Teaching sketch"
   }
 };
 
 const scaleModes = {
   solar: {
     label: "Solar System",
+    frame: "Heliocentric map",
+    scaleClaim: "Approximate AU distances",
+    routeClaim: "Atlas overlays, not trajectories",
     spanAu: 6.2,
     center: () => ({ x: 0, y: 0 }),
     visible: new Set(["sun", "mercury", "earth", "mars", "ceres", "vesta", "earth-l4", "earth-l5", "cycler"])
   },
   inner: {
     label: "Inner System",
+    frame: "Heliocentric map",
+    scaleClaim: "Approximate AU distances",
+    routeClaim: "Atlas overlays, not trajectories",
     spanAu: 3.5,
     center: () => ({ x: 0.55, y: 0 }),
     visible: new Set(["sun", "mercury", "earth", "mars", "ceres", "earth-l4", "earth-l5", "sun-earth-l1", "sun-earth-l2", "cycler"])
   },
   earth: {
     label: "Earth Gateway",
+    frame: "Planet-local schematic",
+    scaleClaim: "Distances exaggerated",
+    routeClaim: "Local service categories",
     spanAu: 0.025,
     center: () => getBodyWorld("earth"),
     visible: new Set(["earth", "leo-port", "moon", "earth-moon-l1", "sun-earth-l1", "sun-earth-l2", "earth-l4", "earth-l5"])
   },
   mars: {
     label: "Mars Gateway",
+    frame: "Planet-local schematic",
+    scaleClaim: "Distances exaggerated",
+    routeClaim: "Local service categories",
     spanAu: 0.02,
     center: () => getBodyWorld("mars"),
     visible: new Set(["mars", "phobos-port", "deimos-port", "mars-cycler-point"])
   },
   ceres: {
     label: "Ceres / Belt",
+    frame: "Belt-local schematic",
+    scaleClaim: "Regional context, not exact local layout",
+    routeClaim: "Cargo corridor classes",
     spanAu: 1.2,
     center: () => getBodyWorld("ceres"),
     visible: new Set(["ceres", "vesta", "ceres-drift-hub"])
@@ -353,6 +526,8 @@ const routeClasses = [
     id: "cycler-line",
     name: "Cycler Line",
     type: "Cycler Line",
+    claim: "service-schedule",
+    geometry: "symbolic service lane",
     role: "Scheduled high-capacity infrastructure orbit",
     color: "#ffd06f",
     dash: [8, 7],
@@ -363,6 +538,8 @@ const routeClasses = [
     id: "earth-mars-fast",
     name: "Fast Earth-Mars Transfer",
     type: "Fast Transfer",
+    claim: "transfer-class",
+    geometry: "schematic route class",
     role: "Bright, higher-energy route class for quick crew or priority cargo transfers",
     color: "#8fd4ff",
     dash: [],
@@ -373,6 +550,8 @@ const routeClasses = [
     id: "earth-ceres-low",
     name: "Low-Energy Belt Corridor",
     type: "Low-Energy Transfer",
+    claim: "conceptual-corridor",
+    geometry: "conceptual corridor",
     role: "Faint slow corridor connecting Sun-Earth gateways to the asteroid belt",
     color: "#8da7ff",
     dash: [3, 10],
@@ -383,6 +562,8 @@ const routeClasses = [
     id: "mars-ceres-planned",
     name: "Mars-Ceres Planned Route",
     type: "Planned Route",
+    claim: "planned-relationship",
+    geometry: "symbolic planning link",
     role: "Thin dotted cargo planning route between Mars gateways and Ceres",
     color: "#9aa6b2",
     dash: [2, 8],
@@ -396,6 +577,8 @@ const shuttleRoutes = [
     id: "earth-cycler-a",
     name: "Shuttle E-C 01",
     type: "Shuttle Transfer",
+    claim: "service-schedule",
+    geometry: "taxi timing marker",
     parent: "Earth-Mars corridor",
     role: "Earth launch timed to cycler Earth rendezvous",
     infrastructure: "Medium",
@@ -410,6 +593,8 @@ const shuttleRoutes = [
     id: "earth-cycler-b",
     name: "Shuttle C-E 02",
     type: "Shuttle Transfer",
+    claim: "service-schedule",
+    geometry: "taxi timing marker",
     parent: "Earth-Mars corridor",
     role: "Cycler return timed to Earth flyby",
     infrastructure: "Medium",
@@ -424,6 +609,8 @@ const shuttleRoutes = [
     id: "cycler-mars-a",
     name: "Shuttle C-M 03",
     type: "Shuttle Transfer",
+    claim: "service-schedule",
+    geometry: "taxi timing marker",
     parent: "Mars System",
     role: "Mars terminal transfer timed to cycler Mars rendezvous",
     infrastructure: "Medium",
@@ -438,6 +625,8 @@ const shuttleRoutes = [
     id: "cycler-mars-b",
     name: "Shuttle M-C 04",
     type: "Shuttle Transfer",
+    claim: "service-schedule",
+    geometry: "taxi timing marker",
     parent: "Mars System",
     role: "Mars ascent timed to cycler intercept",
     infrastructure: "Medium",
@@ -452,6 +641,8 @@ const shuttleRoutes = [
     id: "mars-surface-phobos",
     name: "Mars Surface Shuttle",
     type: "Shuttle Transfer",
+    claim: "service-schedule",
+    geometry: "local service marker",
     parent: "Mars System",
     role: "Reusable local shuttle between Mars surface and Phobos Port",
     infrastructure: "High",
@@ -469,6 +660,8 @@ const probeOrbits = [
     id: "parker-style-probe",
     name: "Solar Dive Probe",
     type: "Educational Probe Orbit",
+    claim: "science-example",
+    geometry: "educational orbit example",
     parent: "Inner Solar System",
     role: "Shows a high-energy solar science dive, inspired by close solar probe trajectories",
     infrastructure: "Science example",
@@ -484,6 +677,8 @@ const probeOrbits = [
     id: "jwst-style-l2",
     name: "L2 Observatory Region",
     type: "Educational Science Mission",
+    claim: "science-example",
+    geometry: "educational local marker",
     parent: "Sun-Earth L2",
     role: "Shows why Sun-Earth L2 is useful for observatories and thermal stability",
     infrastructure: "Science example",
@@ -871,6 +1066,28 @@ function drawCurvedRoute(fromId, toId, color, dash = [], bend = -0.18, width = 1
   ctx.setLineDash([]);
 }
 
+function routeStyle(route, index = 0) {
+  const styles = {
+    "transfer-class": { color: "rgba(143, 212, 255, 0.76)", dash: [], width: 1.7, bend: -0.15 - index * 0.025 },
+    "conceptual-corridor": { color: "rgba(141, 167, 255, 0.50)", dash: [3, 12], width: 1.2, bend: -0.22 - index * 0.025 },
+    "planned-relationship": { color: "rgba(154, 166, 178, 0.42)", dash: [2, 9], width: 1, bend: -0.12 - index * 0.025 },
+    "service-schedule": { color: "rgba(255, 208, 111, 0.46)", dash: [10, 10], width: 1.2, bend: -0.10 - index * 0.02 },
+    "science-example": { color: "rgba(255, 159, 111, 0.48)", dash: [5, 8], width: 1, bend: -0.16 }
+  };
+  return styles[route.claim] || { color: `${route.color}88`, dash: route.dash || [], width: 1.2, bend: -0.12 - index * 0.025 };
+}
+
+function claimLabel(claim) {
+  const labels = {
+    "transfer-class": "Transfer class",
+    "conceptual-corridor": "Conceptual corridor",
+    "planned-relationship": "Planning link",
+    "service-schedule": "Service schedule",
+    "science-example": "Science example"
+  };
+  return labels[claim] || "Route overlay";
+}
+
 function routeProgress(route, day = state.simDays) {
   const event = routeEvent(route, day);
   const active = day >= event.departure && day <= event.arrival;
@@ -1047,13 +1264,14 @@ function drawOrbitView() {
   state.labelBoxes = [];
   updateScaleMetrics();
   drawSpace();
+  if (isLocalSchematicScale()) drawSchematicFrame(scaleModes[state.scaleMode]);
   if (state.showOrbits) {
     if (state.scaleMode !== "earth" && state.scaleMode !== "mars") {
       if (layerEnabled("planets")) bodies.forEach((body) => {
         if (visibleInScale(body.id) || state.scaleMode === "ceres") drawOrbit(body);
       });
       drawAsteroidBelt();
-      if (layerEnabled("cyclers") && visibleInScale("cycler")) drawOrbit(cyclerOrbit, "rgba(255, 208, 111, 0.34)", [8, 7]);
+      if (layerEnabled("cyclers") && visibleInScale("cycler")) drawOrbit(cyclerOrbit, "rgba(255, 208, 111, 0.14)", [12, 14]);
       if (layerEnabled("probeOrbits")) probeOrbits.forEach((probe) => {
         if (probe.semiMajor) drawOrbit(probe, `${probe.color}55`, [5, 8]);
       });
@@ -1071,7 +1289,9 @@ function drawOrbitView() {
     routeClasses.forEach((route, index) => {
       if (!layerEnabled(routeLayer(route))) return;
       if (visibleInScale(route.from) || visibleInScale(route.to) || state.scaleMode === "ceres") {
-        drawCurvedRoute(route.from, route.to, `${route.color}88`, route.dash, -0.12 - index * 0.025, route.type === "Fast Transfer" ? 1.6 : 1.2);
+        const style = routeStyle(route, index);
+        drawCurvedRoute(route.from, route.to, style.color, style.dash, style.bend, style.width);
+        drawRouteClaimMarker(route, style, index);
       }
     });
   }
@@ -1084,6 +1304,7 @@ function drawOrbitView() {
     if (layerEnabled(nodeLayer(node)) && visibleInScale(node.id)) drawObject(node, node.position(), node.radius, node.color, "node", "", layerEnabled("labels"));
   });
   if (layerEnabled("cyclers") && visibleInScale("cycler")) drawObject(cyclerOrbit, getBodyWorld("cycler"), cyclerOrbit.radius, cyclerOrbit.color, "cycler", nextCyclerStop().label, layerEnabled("labels"));
+  if (layerEnabled("cyclers") && (state.scaleMode === "solar" || state.scaleMode === "inner")) drawCyclerServiceLane();
 
   if (layerEnabled("probeOrbits")) {
     probeOrbits.forEach((probe) => {
@@ -1123,48 +1344,133 @@ function drawLocalOrbit(parentId, distance, color) {
 function drawShuttleRoute(route) {
   const trip = routeProgress(route);
   if (!trip.active && state.scaleMode !== "mars" && state.scaleMode !== "earth") return;
-  drawCurvedRoute(route.from, route.to, "rgba(134, 240, 189, 0.28)", [], route.stop === "earth" ? -0.18 : -0.26, 1.2);
+  const style = routeStyle(route);
+  drawCurvedRoute(route.from, route.to, "rgba(134, 240, 189, 0.30)", style.dash, route.stop === "earth" ? -0.18 : -0.26, 1.2);
+}
+
+function drawRouteClaimMarker(route, style, index = 0) {
+  const from = worldToScreen(getBodyWorld(route.from));
+  const to = worldToScreen(getBodyWorld(route.to));
+  const bend = style.bend ?? -0.14;
+  const mid = {
+    x: (from.x + to.x) / 2,
+    y: (from.y + to.y) / 2 + Math.hypot(to.x - from.x, to.y - from.y) * bend
+  };
+  const t = 0.5;
+  const marker = {
+    x: (1 - t) * (1 - t) * from.x + 2 * (1 - t) * t * mid.x + t * t * to.x,
+    y: (1 - t) * (1 - t) * from.y + 2 * (1 - t) * t * mid.y + t * t * to.y
+  };
+  const selected = state.selectedId === route.id || state.hoverId === route.id;
+  const size = selected ? 8 : 6;
+  ctx.save();
+  ctx.translate(marker.x, marker.y);
+  ctx.rotate(Math.PI / 4);
+  ctx.fillStyle = selected ? route.color : style.color;
+  ctx.strokeStyle = "rgba(5, 7, 11, 0.92)";
+  ctx.lineWidth = 2;
+  ctx.fillRect(-size / 2, -size / 2, size, size);
+  ctx.strokeRect(-size / 2, -size / 2, size, size);
+  ctx.restore();
+  if (selected && layerEnabled("labels")) drawLabel(route.name, marker, route.color, true, claimLabel(route.claim));
+  state.hitTargets.push({ id: route.id, x: marker.x, y: marker.y, radius: Math.max(14, size + 8 + index) });
+}
+
+function isLocalSchematicScale() {
+  return state.scaleMode === "earth" || state.scaleMode === "mars" || state.scaleMode === "ceres";
+}
+
+function drawSchematicFrame(config) {
+  const margin = state.width < 620 ? 12 : 22;
+  const top = state.width < 620 ? 142 : 126;
+  const bottom = state.width < 620 ? 138 : 92;
+  const x = margin;
+  const y = Math.min(top, state.height - bottom - 180);
+  const width = state.width - margin * 2;
+  const height = Math.max(180, state.height - y - bottom);
+  ctx.save();
+  ctx.strokeStyle = "rgba(255, 206, 111, 0.34)";
+  ctx.fillStyle = "rgba(255, 206, 111, 0.035)";
+  ctx.setLineDash([10, 10]);
+  roundedRect(x, y, width, height, 8);
+  ctx.fill();
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#ffd06f";
+  ctx.font = "800 12px Inter, system-ui";
+  ctx.fillText(`${config.frame} | ${config.scaleClaim}`, x + 14, y + 23);
+  ctx.fillStyle = "#c9d4df";
+  ctx.font = "600 12px Inter, system-ui";
+  ctx.fillText("Local offsets are layout symbols, not physical distances.", x + 14, y + 42);
+  ctx.restore();
+}
+
+function drawCyclerServiceLane() {
+  if (state.width < 860 || state.viewMode !== "orbit") return;
+  const x = Math.max(420, state.width * 0.36);
+  const y = state.height - 156;
+  const width = Math.min(420, state.width - x - 360);
+  if (width < 260) return;
+  const height = 76;
+  const local = ((state.simDays % cyclerOrbit.period) + cyclerOrbit.period) % cyclerOrbit.period;
+  ctx.save();
+  roundedRect(x, y, width, height, 8);
+  ctx.fillStyle = "rgba(8, 12, 17, 0.66)";
+  ctx.strokeStyle = "rgba(255, 208, 111, 0.28)";
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#ffd06f";
+  ctx.font = "800 12px Inter, system-ui";
+  ctx.fillText("Cycler service schedule", x + 14, y + 20);
+  ctx.fillStyle = "#aebccd";
+  ctx.font = "600 11px Inter, system-ui";
+  ctx.fillText("Flyby windows, not solved rendezvous geometry", x + 14, y + 38);
+  const lineX = x + 18;
+  const lineY = y + 56;
+  const lineW = width - 36;
+  ctx.strokeStyle = "rgba(255, 208, 111, 0.50)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(lineX, lineY);
+  ctx.lineTo(lineX + lineW, lineY);
+  ctx.stroke();
+  cyclerOrbit.stops.forEach((stop) => {
+    const stopX = lineX + (stop.day / cyclerOrbit.period) * lineW;
+    ctx.beginPath();
+    ctx.arc(stopX, lineY, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = stop.id === "earth" ? "#78bfff" : "#e9785f";
+    ctx.fill();
+  });
+  const cursorX = lineX + (local / cyclerOrbit.period) * lineW;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(cursorX - 1, lineY - 11, 2, 22);
+  ctx.restore();
 }
 
 function drawGravityView() {
   state.hitTargets = [];
   state.labelBoxes = [];
   drawSpace();
-  drawConceptTitle("Gravity Well View", `Snapshot ${formatDate(state.conceptSnapshotDay)} | pseudo-3D effective-potential terrain.`);
+  drawConceptTitle("Gravity Well View", `Snapshot ${formatDate(state.conceptSnapshotDay)} | topology sketch; wells and saddles share one coordinate frame.`);
   drawPotentialSurface();
-  const nodes = [
-    { id: "earth", name: "Earth Well", x: -1.0, y: 0.1, z: -1.6, color: "#78bfff", role: "deep gravity well" },
-    { id: "leo-port", name: "LEO Port", x: -0.82, y: -0.08, z: -1.0, color: "#90f0c6", role: "exit shelf" },
-    { id: "earth-moon-l1", name: "Earth-Moon L1", x: -0.38, y: -0.05, z: -0.42, color: "#c6a7ff", role: "saddle gateway" },
-    { id: "moon", name: "Moon Well", x: 0.05, y: 0.16, z: -0.86, color: "#d7dce3", role: "secondary well" },
-    { id: "sun-earth-l1", name: "Sun-Earth L1/L2", x: 0.48, y: -0.10, z: -0.28, color: "#ffa96f", role: "solar saddle" },
-    { id: "phobos-port", name: "Mars / Phobos Shelf", x: 0.95, y: 0.22, z: -0.62, color: "#9ff1c7", role: "gateway shelf" }
-  ];
-  nodes.forEach((node) => {
+  gravityConceptNodes().forEach((node) => {
     const p = projectIso(node.x, node.y, node.z);
     drawConceptNode(node, p.x, p.y, node.role);
   });
-  drawConceptLegend(["Wells are steep energy costs, not just distances", "L1/L2 regions are saddle passes in the terrain", "Gateways matter because they sit on useful shelves and ridges"]);
+  drawConceptLegend(["Wells are no longer arranged as a straight ladder", "Grid density is higher; contours show shelves and saddle passes", "Still conceptual: not a computed mission energy surface"]);
 }
 
 function drawTransferView() {
   state.hitTargets = [];
   state.labelBoxes = [];
   drawSpace();
-  drawConceptTitle("Low-Energy Routes View", `Snapshot ${formatDate(state.conceptSnapshotDay)} | approximate corridor sketch; better manifold engine needed.`);
+  drawConceptTitle("Low-Energy Routes View", `Snapshot ${formatDate(state.conceptSnapshotDay)} | smooth corridor topology; not solved CR3BP tubes.`);
   drawManifoldTubes();
-  const nodes = [
-    { id: "sun-earth-l1", name: "Sun-Earth L1/L2", x: -0.82, y: -0.18, z: 0.02, color: "#ffa96f", role: "halo gateway" },
-    { id: "earth-moon-l1", name: "Earth-Moon L1", x: -0.42, y: 0.28, z: 0.04, color: "#c6a7ff", role: "lunar gateway" },
-    { id: "mars-cycler-point", name: "Mars Cycler Node", x: 0.38, y: -0.20, z: 0.0, color: "#ffd06f", role: "cycler intercept" },
-    { id: "phobos-port", name: "Phobos / Deimos", x: 0.72, y: 0.24, z: 0.02, color: "#9ff1c7", role: "Mars gateway" },
-    { id: "ceres", name: "Ceres Belt Hub", x: 1.08, y: -0.05, z: 0.0, color: "#c5cbd4", role: "slow cargo target" }
-  ];
-  nodes.forEach((node) => {
+  lowEnergyConceptNodes().forEach((node) => {
     const p = projectIso(node.x, node.y, node.z);
     drawConceptNode(node, p.x, p.y, node.role);
   });
-  drawConceptLegend(["Halo orbits are shown as loops around saddle gateways", "Blue tubes imply slow stable/unstable manifold corridors", "Gold arcs remain fast/cycler infrastructure, not true manifolds"]);
+  drawConceptLegend(["Corridors are braided and curved, not direct point-to-point links", "Blue paths imply slow gateway handoffs; gold remains fast/cycler infrastructure", "Still conceptual until a real manifold solver exists"]);
 }
 
 function drawConceptTitle(title, subtitle) {
@@ -1186,7 +1492,7 @@ function projectIso(x, y, z = 0) {
   };
   const scale = Math.min(state.width, state.height) * (state.width > 900 ? 0.27 : 0.34) * state.concept.zoom;
   const origin = {
-    x: (state.width > 900 ? state.width * 0.55 : state.width * 0.53) + state.concept.pan.x,
+    x: (state.width > 900 ? state.width * 0.50 : state.width * 0.53) + state.concept.pan.x,
     y: (state.width > 900 ? state.height * 0.52 : state.height * 0.58) + state.concept.pan.y
   };
   return {
@@ -1195,23 +1501,66 @@ function projectIso(x, y, z = 0) {
   };
 }
 
-function effectivePotential(x, y) {
-  const wells = [
-    { x: -1.0, y: 0.1, mass: 1.35, soft: 0.10 },
-    { x: 0.05, y: 0.16, mass: 0.46, soft: 0.09 },
-    { x: 0.95, y: 0.22, mass: 0.62, soft: 0.14 }
+function gravityWellAnchors() {
+  return [
+    { id: "sun", x: -1.18, y: -0.36, mass: 0.92, soft: 0.20 },
+    { id: "earth", x: -0.48, y: 0.05, mass: 1.35, soft: 0.11 },
+    { id: "moon", x: 0.02, y: 0.34, mass: 0.36, soft: 0.10 },
+    { id: "mars", x: 0.88, y: -0.25, mass: 0.58, soft: 0.15 }
   ];
-  const centrifugal = 0.16 * (x * x + y * y);
+}
+
+function gravityConceptNodes() {
+  return [
+    { id: "earth", name: "Earth Well", x: -0.48, y: 0.05, z: -1.50, color: "#78bfff", role: "deep gravity well" },
+    { id: "leo-port", name: "LEO Port", x: -0.36, y: -0.11, z: -0.94, color: "#90f0c6", role: "exit shelf" },
+    { id: "sun-earth-l1", name: "Sun-Earth L1/L2", x: -0.68, y: -0.12, z: -0.26, color: "#ffa96f", role: "solar saddle" },
+    { id: "earth-moon-l1", name: "Earth-Moon L1", x: -0.12, y: 0.23, z: -0.36, color: "#c6a7ff", role: "lunar saddle" },
+    { id: "moon", name: "Moon Well", x: 0.02, y: 0.34, z: -0.72, color: "#d7dce3", role: "secondary well" },
+    { id: "phobos-port", name: "Mars / Phobos Shelf", x: 0.82, y: -0.18, z: -0.52, color: "#9ff1c7", role: "Mars gateway shelf" },
+    { id: "mars", name: "Mars Well", x: 0.88, y: -0.25, z: -0.82, color: "#e9785f", role: "planetary well" }
+  ];
+}
+
+function lowEnergyConceptNodes() {
+  return [
+    { id: "sun-earth-l1", name: "Sun-Earth L1/L2", x: -0.82, y: -0.22, z: 0.02, color: "#ffa96f", role: "halo gateway" },
+    { id: "earth-moon-l1", name: "Earth-Moon L1", x: -0.38, y: 0.34, z: 0.04, color: "#c6a7ff", role: "lunar gateway" },
+    { id: "mars-cycler-point", name: "Mars Cycler Node", x: 0.28, y: -0.28, z: 0.02, color: "#ffd06f", role: "cycler intercept" },
+    { id: "phobos-port", name: "Phobos / Deimos", x: 0.74, y: 0.20, z: 0.04, color: "#9ff1c7", role: "Mars gateway" },
+    { id: "ceres", name: "Ceres Belt Hub", x: 1.12, y: -0.08, z: 0.02, color: "#c5cbd4", role: "slow cargo target" }
+  ];
+}
+
+function effectivePotential(x, y) {
+  const wells = gravityWellAnchors();
+  const centrifugal = 0.13 * (x * x + y * y);
   const pull = wells.reduce((sum, well) => {
     const d = Math.hypot(x - well.x, y - well.y) + well.soft;
     return sum - well.mass / d;
   }, 0);
-  return Math.max(-1.65, Math.min(0.58, pull * 0.34 + centrifugal));
+  const earthMoonSaddle = 0.16 * Math.exp(-Math.hypot(x + 0.12, y - 0.22) * 4.8);
+  const solarSaddle = 0.13 * Math.exp(-Math.hypot(x + 0.68, y + 0.12) * 4.4);
+  const marsShelf = 0.08 * Math.exp(-Math.hypot(x - 0.75, y + 0.18) * 4.2);
+  return Math.max(-1.70, Math.min(0.62, pull * 0.27 + centrifugal + earthMoonSaddle + solarSaddle + marsShelf));
 }
 
 function drawPotentialSurface() {
-  const step = 0.18;
-  ctx.lineWidth = 1;
+  const step = state.width > 900 ? 0.09 : 0.12;
+  ctx.save();
+  ctx.globalCompositeOperation = "screen";
+  for (let y = -0.78; y <= 0.80; y += step) {
+    for (let x = -1.36; x <= 1.32; x += step) {
+      const z = effectivePotential(x, y);
+      const p = projectIso(x, y, z - 0.015);
+      const alpha = Math.max(0.015, Math.min(0.085, (z + 1.7) * 0.035));
+      ctx.fillStyle = `rgba(119, 203, 255, ${alpha})`;
+      ctx.fillRect(p.x - 1, p.y - 1, 2, 2);
+    }
+  }
+  ctx.restore();
+
+  ctx.lineWidth = 0.75;
   for (let y = -0.75; y <= 0.78; y += step) {
     ctx.beginPath();
     for (let x = -1.35; x <= 1.32; x += step) {
@@ -1220,7 +1569,7 @@ function drawPotentialSurface() {
       if (x <= -1.34) ctx.moveTo(p.x, p.y);
       else ctx.lineTo(p.x, p.y);
     }
-    ctx.strokeStyle = "rgba(119, 203, 255, 0.16)";
+    ctx.strokeStyle = "rgba(119, 203, 255, 0.13)";
     ctx.stroke();
   }
   for (let x = -1.35; x <= 1.32; x += step) {
@@ -1231,11 +1580,12 @@ function drawPotentialSurface() {
       if (y <= -0.74) ctx.moveTo(p.x, p.y);
       else ctx.lineTo(p.x, p.y);
     }
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.10)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.075)";
     ctx.stroke();
   }
-  drawContour(-0.70, "rgba(198, 167, 255, 0.32)");
-  drawContour(-0.42, "rgba(255, 169, 111, 0.30)");
+  drawContour(-0.84, "rgba(120, 191, 255, 0.30)");
+  drawContour(-0.58, "rgba(198, 167, 255, 0.34)");
+  drawContour(-0.34, "rgba(255, 169, 111, 0.30)");
 }
 
 function drawContour(level, color) {
@@ -1266,27 +1616,33 @@ function drawContour(level, color) {
 
 function drawManifoldTubes() {
   drawHaloLoop(-0.82, -0.18, "#ffa96f");
-  drawHaloLoop(-0.42, 0.28, "#c6a7ff");
-  drawHaloLoop(0.72, 0.24, "#9ff1c7");
+  drawHaloLoop(-0.38, 0.34, "#c6a7ff");
+  drawHaloLoop(0.74, 0.20, "#9ff1c7");
   drawManifoldPath([
-    [-0.82, -0.18, 0.12],
-    [-0.52, -0.42, 0.34],
-    [-0.08, -0.26, 0.44],
-    [0.38, -0.20, 0.18],
-    [0.72, 0.24, 0.08]
+    [-0.82, -0.22, 0.12],
+    [-0.62, -0.42, 0.30],
+    [-0.28, -0.34, 0.44],
+    [0.04, -0.06, 0.36],
+    [0.28, -0.28, 0.18],
+    [0.52, -0.04, 0.16],
+    [0.74, 0.20, 0.08]
   ], "#8da7ff", 13);
   drawManifoldPath([
-    [-0.42, 0.28, 0.10],
-    [-0.18, 0.50, 0.30],
-    [0.24, 0.42, 0.32],
-    [0.72, 0.24, 0.10],
-    [1.08, -0.05, 0.02]
+    [-0.38, 0.34, 0.10],
+    [-0.18, 0.56, 0.30],
+    [0.16, 0.46, 0.36],
+    [0.46, 0.30, 0.24],
+    [0.74, 0.20, 0.10],
+    [0.98, 0.10, 0.05],
+    [1.12, -0.08, 0.02]
   ], "#7ee0ff", 10);
   drawManifoldPath([
     [-0.88, -0.12, -0.02],
-    [-0.22, -0.58, 0.08],
-    [0.38, -0.20, 0.06],
-    [1.08, -0.05, 0.00]
+    [-0.58, -0.62, 0.06],
+    [-0.18, -0.54, 0.10],
+    [0.28, -0.28, 0.06],
+    [0.66, -0.22, 0.03],
+    [1.12, -0.08, 0.00]
   ], "#ffd06f", 6, []);
 }
 
@@ -1304,15 +1660,25 @@ function drawHaloLoop(cx, cy, color) {
 }
 
 function drawManifoldPath(points, color, width, dash = [9, 10]) {
-  for (let offset = -1; offset <= 1; offset += 1) {
-    ctx.beginPath();
-    points.forEach((point, index) => {
-      const p = projectIso(point[0], point[1] + offset * 0.035, point[2] + Math.abs(offset) * 0.04);
-      if (index === 0) ctx.moveTo(p.x, p.y);
-      else ctx.lineTo(p.x, p.y);
+  for (let offset = -2; offset <= 2; offset += 1) {
+    const offsetScale = offset * 0.026;
+    const projected = points.map((point, index) => {
+      const wave = Math.sin(index * 1.7 + offset) * 0.018;
+      return projectIso(point[0], point[1] + offsetScale + wave, point[2] + Math.abs(offset) * 0.026);
     });
-    ctx.strokeStyle = offset === 0 ? `${color}a8` : `${color}38`;
-    ctx.lineWidth = offset === 0 ? width * 0.22 : width * 0.12;
+    ctx.beginPath();
+    projected.forEach((point, index) => {
+      if (index === 0) {
+        ctx.moveTo(point.x, point.y);
+      } else if (index < projected.length - 1) {
+        const next = projected[index + 1];
+        ctx.quadraticCurveTo(point.x, point.y, (point.x + next.x) / 2, (point.y + next.y) / 2);
+      } else {
+        ctx.lineTo(point.x, point.y);
+      }
+    });
+    ctx.strokeStyle = offset === 0 ? `${color}b8` : `${color}32`;
+    ctx.lineWidth = offset === 0 ? width * 0.24 : width * 0.10;
     ctx.setLineDash(dash);
     ctx.stroke();
   }
@@ -1383,9 +1749,13 @@ function updateHud() {
   simDateEl.textContent = formatDate(state.simDays);
   const conceptual = state.viewMode !== "orbit";
   const model = viewModels[state.viewMode];
+  const contract = currentViewContract();
   modelBadge.textContent = model.label;
   modelNote.textContent = model.note;
-  statusPill.textContent = conceptual ? "Research" : state.paused ? "Paused" : "Running";
+  frameBadge.textContent = contract.frame;
+  scaleBadge.textContent = contract.scale;
+  routeBadge.textContent = contract.routes;
+  statusPill.textContent = conceptual ? t("research") : state.paused ? t("paused") : t("running");
   statusPill.style.color = conceptual ? "#8fd4ff" : state.paused ? "#ffd06f" : "#79e4b0";
   pauseButton.disabled = conceptual;
   orbitToggle.disabled = conceptual;
@@ -1394,6 +1764,19 @@ function updateHud() {
     button.setAttribute("aria-disabled", String(conceptual));
   });
   if (state.selectedId) updateInspector(state.selectedId);
+}
+
+function currentViewContract() {
+  if (state.viewMode !== "orbit") {
+    const model = viewModels[state.viewMode];
+    return { frame: model.frame, scale: model.scale, routes: model.routes };
+  }
+  const scale = scaleModes[state.scaleMode];
+  return {
+    frame: scale.frame,
+    scale: scale.scaleClaim,
+    routes: scale.routeClaim
+  };
 }
 
 function describeObject(id) {
@@ -1443,23 +1826,25 @@ function describeObject(id) {
 function objectInfo(item, phase, nextEvent = "--", eta = "--", modelNoteText = "") {
   const connected = connectedRoutes(item.id);
   const modelClass = objectModelClass(item);
+  const details = [
+    ["Type", item.type || "Infrastructure node"],
+    ["Model class", modelClass],
+    ["Role", item.role],
+    ["Parent system", item.parent || "--"],
+    ["Position / phase", phase],
+    ["Next event", nextEvent],
+    ["Connected routes", connected.length ? connected.join(", ") : "--"],
+    ["Infrastructure potential", item.infrastructure || "Medium"],
+    ["ETA", eta],
+    ["Model limit", modelNoteText || modelLimitFor(modelClass)]
+  ];
+  if (item.claim) details.splice(2, 0, ["Route claim", claimLabel(item.claim)], ["Geometry", item.geometry || "--"]);
   return {
     id: item.id,
     name: item.name,
     lead: item.role,
     articleId: articleIdFor(item.id),
-    details: [
-      ["Type", item.type || "Infrastructure node"],
-      ["Model class", modelClass],
-      ["Role", item.role],
-      ["Parent system", item.parent || "--"],
-      ["Position / phase", phase],
-      ["Next event", nextEvent],
-      ["Connected routes", connected.length ? connected.join(", ") : "--"],
-      ["Infrastructure potential", item.infrastructure || "Medium"],
-      ["ETA", eta],
-      ["Model limit", modelNoteText || modelLimitFor(modelClass)]
-    ]
+    details
   };
 }
 
@@ -1489,6 +1874,27 @@ function updateInspector(id) {
       <dd>${value}</dd>
     </div>
   `).join("");
+}
+
+function applyLanguage(language = state.language) {
+  state.language = language;
+  document.documentElement.lang = language === "zh" ? "zh-Hans" : "en";
+  document.querySelectorAll("[data-i18n]").forEach((node) => {
+    node.textContent = t(node.dataset.i18n);
+  });
+  languageButtons.forEach((button) => button.classList.toggle("active", button.dataset.language === language));
+  reviewEyebrow.textContent = t("offlineReview");
+  reviewSnapshotLabel.textContent = t("includeSnapshot");
+  reviewSubmit.textContent = t("saveLocally");
+  reviewCancel.textContent = t("cancel");
+  reviewRatingButtons.forEach((button) => {
+    button.textContent = button.dataset.rating === "up" ? t("ratingGood") : t("ratingNeedsWork");
+  });
+  if (!state.selectedId) {
+    inspectName.textContent = t("selectObject");
+    inspectRoute.textContent = t("inspectHint");
+  }
+  updateReviewCopy();
 }
 
 function openArticle(id = state.activeArticleId) {
@@ -1544,7 +1950,7 @@ function updateSchedule() {
   scheduleList.innerHTML = rows.map((row) => `
     <button class="schedule-item" type="button" data-route-id="${row.id}">
       <span class="schedule-route">${row.route}</span>
-      <span class="schedule-eta">${row.active ? "ETA" : "T"} ${row.eta}</span>
+      <span class="schedule-eta">${row.active ? t("eta") : t("timePrefix")} ${row.eta}</span>
       <span class="schedule-meta">${row.name} - ${row.meta}</span>
     </button>
   `).join("");
@@ -1565,6 +1971,125 @@ function selectAt(point) {
   state.selectedId = id;
   updateInspector(id);
   return true;
+}
+
+function showReviewMenu(clientX, clientY, targetId = state.selectedId) {
+  state.reviewTargetId = targetId || state.selectedId || null;
+  const viewerRect = canvas.parentElement.getBoundingClientRect();
+  const menuWidth = 170;
+  const menuHeight = 86;
+  reviewMenu.style.left = `${Math.min(clientX - viewerRect.left, viewerRect.width - menuWidth - 12)}px`;
+  reviewMenu.style.top = `${Math.min(clientY - viewerRect.top, viewerRect.height - menuHeight - 12)}px`;
+  reviewMenu.hidden = false;
+}
+
+function hideReviewMenu() {
+  reviewMenu.hidden = true;
+}
+
+function updateReviewCopy() {
+  const isFeedback = state.reviewAction === "feedback";
+  reviewTitle.textContent = isFeedback ? t("feedbackTitle") : t("questionTitle");
+  reviewPromptLabel.textContent = isFeedback ? t("feedbackSummaryLabel") : t("questionLabel");
+  reviewFeedbackLabel.textContent = t("feedbackDetailLabel");
+  reviewFeedbackWrap.hidden = !isFeedback;
+  reviewRatingGroup.hidden = !isFeedback;
+}
+
+function openReviewDrawer(action) {
+  state.reviewAction = action;
+  state.reviewRating = "";
+  reviewPrompt.value = "";
+  reviewFeedback.value = "";
+  reviewStatus.textContent = "";
+  reviewSnapshot.checked = true;
+  reviewRatingButtons.forEach((button) => button.classList.remove("active"));
+  updateReviewCopy();
+  reviewDrawer.classList.add("open");
+  reviewDrawer.setAttribute("aria-hidden", "false");
+  reviewPrompt.focus();
+}
+
+function closeReviewDrawer() {
+  reviewDrawer.classList.remove("open");
+  reviewDrawer.setAttribute("aria-hidden", "true");
+}
+
+function captureCanvasSnapshot() {
+  if (!reviewSnapshot.checked) return null;
+  const maxWidth = 960;
+  const ratio = Math.min(1, maxWidth / canvas.width);
+  const snapshotCanvas = document.createElement("canvas");
+  snapshotCanvas.width = Math.max(1, Math.round(canvas.width * ratio));
+  snapshotCanvas.height = Math.max(1, Math.round(canvas.height * ratio));
+  const snapshotCtx = snapshotCanvas.getContext("2d");
+  snapshotCtx.drawImage(canvas, 0, 0, snapshotCanvas.width, snapshotCanvas.height);
+  return snapshotCanvas.toDataURL("image/jpeg", 0.72);
+}
+
+function currentReviewContext() {
+  const targetId = state.reviewTargetId || state.selectedId;
+  const info = targetId ? describeObject(targetId) : null;
+  return {
+    version: "Demo 002.5",
+    url: window.location.href,
+    viewMode: state.viewMode,
+    scaleMode: state.scaleMode,
+    simDate: formatDate(state.simDays),
+    simDays: Number(state.simDays.toFixed(3)),
+    selectedId: state.selectedId,
+    targetId,
+    targetName: info?.name || null,
+    targetLead: info?.lead || null,
+    targetDetails: info?.details || [],
+    contract: currentViewContract(),
+    layers: { ...state.layers },
+    viewport: { width: state.width, height: state.height, dpr: state.dpr },
+    orbitCamera: {
+      zoom: Number(state.zoom.toFixed(3)),
+      pan: { x: Math.round(state.pan.x), y: Math.round(state.pan.y) },
+      centerWorld: {
+        x: Number(state.centerWorld.x.toFixed(4)),
+        y: Number(state.centerWorld.y.toFixed(4))
+      }
+    },
+    conceptCamera: {
+      rotation: Number(state.concept.rotation.toFixed(3)),
+      pitch: Number(state.concept.pitch.toFixed(3)),
+      zoom: Number(state.concept.zoom.toFixed(3)),
+      pan: { x: Math.round(state.concept.pan.x), y: Math.round(state.concept.pan.y) }
+    }
+  };
+}
+
+async function saveReviewRecord() {
+  const isFeedback = state.reviewAction === "feedback";
+  const endpoint = isFeedback ? "/api/feedback" : "/api/ask";
+  const payload = {
+    language: state.language,
+    prompt: reviewPrompt.value.trim(),
+    feedback: reviewFeedback.value.trim(),
+    rating: isFeedback ? state.reviewRating : "",
+    context: currentReviewContext(),
+    snapshot: captureCanvasSnapshot()
+  };
+  reviewSubmit.disabled = true;
+  reviewStatus.textContent = t("saving");
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+    if (!response.ok || !result.ok) throw new Error(result.error || "Save failed");
+    reviewStatus.textContent = isFeedback ? t("savedFeedback") : t("savedQuestion");
+    setTimeout(closeReviewDrawer, 520);
+  } catch {
+    reviewStatus.textContent = t("saveFailed");
+  } finally {
+    reviewSubmit.disabled = false;
+  }
 }
 
 function tick(now) {
@@ -1644,7 +2169,7 @@ function labelFor(id) {
 
 function formatDate(day) {
   const date = new Date(startDate.getTime() + day * DAY_MS);
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(state.language === "zh" ? "zh-CN" : "en", {
     year: "numeric",
     month: "short",
     day: "2-digit",
@@ -1653,7 +2178,7 @@ function formatDate(day) {
 }
 
 function formatEta(days) {
-  if (days <= 0.05) return "Arriving";
+  if (days <= 0.05) return t("arriving");
   if (days < 1) return `${Math.round(days * 24)} h`;
   if (days < 90) return `${Math.ceil(days)} d`;
   return `${Math.round(days / 30)} mo`;
@@ -1694,6 +2219,33 @@ sheetButtons.forEach((button) => {
 
 articleButton.addEventListener("click", () => openArticle(state.activeArticleId));
 articleClose.addEventListener("click", closeArticle);
+reviewClose.addEventListener("click", closeReviewDrawer);
+reviewCancel.addEventListener("click", closeReviewDrawer);
+
+reviewMenu.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-review-action]");
+  if (!button) return;
+  hideReviewMenu();
+  openReviewDrawer(button.dataset.reviewAction);
+});
+
+reviewRatingButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.reviewRating = button.dataset.rating;
+    reviewRatingButtons.forEach((item) => item.classList.toggle("active", item === button));
+  });
+});
+
+reviewForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  saveReviewRecord();
+});
+
+languageButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    applyLanguage(button.dataset.language);
+  });
+});
 
 speedButtons.forEach((button) => {
   button.addEventListener("click", () => setSpeed(Number(button.dataset.speed)));
@@ -1733,6 +2285,7 @@ canvas.addEventListener("wheel", (event) => {
 }, { passive: false });
 
 canvas.addEventListener("pointerdown", (event) => {
+  if (event.button === 2) return;
   const point = pointerPosition(event);
   state.dragging = true;
   state.dragStart = point;
@@ -1744,6 +2297,17 @@ canvas.addEventListener("pointerdown", (event) => {
     mode: event.shiftKey || event.altKey ? "pan" : "rotate"
   };
   canvas.setPointerCapture(event.pointerId);
+});
+
+canvas.addEventListener("contextmenu", (event) => {
+  event.preventDefault();
+  const point = pointerPosition(event);
+  const targetId = hitTest(point);
+  if (targetId) {
+    state.selectedId = targetId;
+    updateInspector(targetId);
+  }
+  showReviewMenu(event.clientX, event.clientY, targetId);
 });
 
 canvas.addEventListener("pointermove", (event) => {
@@ -1791,10 +2355,23 @@ scheduleList.addEventListener("click", (event) => {
   updateInspector(state.selectedId);
 });
 
+document.addEventListener("click", (event) => {
+  if (!reviewMenu.hidden && !reviewMenu.contains(event.target)) hideReviewMenu();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    hideReviewMenu();
+    closeReviewDrawer();
+  }
+});
+
 window.addEventListener("resize", resize);
 resize();
 setSpeed(10);
 document.body.dataset.viewMode = state.viewMode;
 document.body.dataset.sheetState = "peek";
-updateInspector("earth");
+state.selectedId = "earth";
+applyLanguage("en");
+updateInspector(state.selectedId);
 requestAnimationFrame(tick);

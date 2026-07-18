@@ -280,16 +280,16 @@ Potential genres:
 - idle space logistics tycoon
 - network builder / infrastructure simulator
 
-The clearest current position is:
+The clearest current position is no longer a conventional game demo. It is closer to:
 
 ```text
-Solar System Infrastructure Builder
+Gamified Solar-System Infrastructure Simulator
 ```
 
 or:
 
 ```text
-A network builder for a living civilization
+Infrastructure systems lab for a living civilization
 ```
 
 The core question is not:
@@ -303,6 +303,14 @@ It is:
 ```text
 Which routes, ports, and infrastructure cause civilization to grow?
 ```
+
+This can still borrow from game design, but the immediate product shape should be a simulator with game-like interaction:
+
+- scenarios instead of campaign missions
+- pressure maps instead of win states
+- toggles and interventions instead of build orders
+- explanations and telemetry instead of hidden scoring
+- iteration and review instead of a closed gameplay loop
 
 ## Post-Demo 001 Progression
 
@@ -344,7 +352,7 @@ The system grows settlements from network centrality, flow, supply, safety, ener
 Outpost -> Port -> Town -> City -> Orbital Metropolis
 ```
 
-### Stage 4: Idle / Tycoon Layer
+### Stage 4: Gamified Operations Layer
 
 Add operational pressure:
 
@@ -358,7 +366,7 @@ Add operational pressure:
 - ticket prices
 - shipping companies or transport authorities
 
-The player manages infrastructure, not individual spacecraft.
+The user manages or tests infrastructure assumptions, not individual spacecraft. This layer should remain simulator-first unless a later proposal justifies a stronger game loop.
 
 ### Stage 5: Civilization Layer
 

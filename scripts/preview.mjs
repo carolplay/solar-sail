@@ -1,9 +1,12 @@
 import { createReadStream } from "node:fs";
-import { stat } from "node:fs/promises";
+import { appendFile, mkdir, stat, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..", "dist");
+const projectRoot = resolve(import.meta.dirname, "..");
+const recordsRoot = resolve(projectRoot, "operations");
+const screenshotRoot = resolve(recordsRoot, "review-snapshots");
 const port = Number(process.env.PORT || 4173);
 const host = process.env.HOST || "127.0.0.1";
 const types = {
@@ -12,8 +15,72 @@ const types = {
   ".js": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8"
 };
+const maxJsonBytes = 4_500_000;
+
+async function readJsonBody(req) {
+  let body = "";
+  for await (const chunk of req) {
+    body += chunk;
+    if (body.length > maxJsonBytes) throw new Error("Request body too large");
+  }
+  return JSON.parse(body || "{}");
+}
+
+function sendJson(res, status, payload) {
+  res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+  res.end(JSON.stringify(payload));
+}
+
+function safeTimestamp() {
+  return new Date().toISOString().replace(/[:.]/g, "-");
+}
+
+async function saveSnapshot(kind, snapshot) {
+  if (!snapshot || typeof snapshot !== "string") return null;
+  const match = snapshot.match(/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/);
+  if (!match) return null;
+  await mkdir(screenshotRoot, { recursive: true });
+  const extension = match[1] === "jpeg" ? "jpg" : match[1];
+  const relativePath = `operations/review-snapshots/${safeTimestamp()}-${kind}.${extension}`;
+  const absolutePath = resolve(projectRoot, relativePath);
+  if (!absolutePath.startsWith(screenshotRoot)) throw new Error("Invalid snapshot path");
+  await writeFile(absolutePath, Buffer.from(match[2], "base64"));
+  return relativePath;
+}
+
+async function saveReviewRecord(kind, payload) {
+  await mkdir(recordsRoot, { recursive: true });
+  const snapshotPath = await saveSnapshot(kind, payload.snapshot);
+  const record = {
+    timestamp: new Date().toISOString(),
+    kind,
+    language: payload.language || "en",
+    prompt: payload.prompt || "",
+    feedback: payload.feedback || "",
+    rating: payload.rating || "",
+    context: payload.context || {},
+    snapshotPath
+  };
+  const fileName = kind === "feedback" ? "feedback-local.jsonl" : "questions-local.jsonl";
+  const filePath = resolve(recordsRoot, fileName);
+  if (!filePath.startsWith(recordsRoot)) throw new Error("Invalid record path");
+  await appendFile(filePath, `${JSON.stringify(record)}\n`, "utf8");
+  return { file: `operations/${fileName}`, snapshotPath };
+}
 
 const server = createServer(async (req, res) => {
+  if (req.method === "POST" && (req.url === "/api/ask" || req.url === "/api/feedback")) {
+    try {
+      const payload = await readJsonBody(req);
+      const kind = req.url === "/api/feedback" ? "feedback" : "question";
+      const saved = await saveReviewRecord(kind, payload);
+      sendJson(res, 200, { ok: true, ...saved });
+    } catch (error) {
+      sendJson(res, 400, { ok: false, error: error.message || "Could not save record" });
+    }
+    return;
+  }
+
   const requestPath = normalize(decodeURIComponent(new URL(req.url, `http://localhost:${port}`).pathname));
   const safePath = requestPath === "/" ? "/index.html" : requestPath;
   const filePath = resolve(join(root, safePath));

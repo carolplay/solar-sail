@@ -166,3 +166,29 @@ Target Version: Project memory / ongoing process
 
 - When a session has writable access to `/Users/guoya/.codex/skills/brainstorm-recorder`, update that skill directly with the Proposal-Spec-Feedback loop.
 - Keep `docs/proposal-workflow.md` as the current local source of truth until the global skill is writable.
+
+## 2026-07-17 - Gamified Simulator Positioning
+
+### Decisions
+
+- Reframe the project away from "game demo" and toward "gamified simulator."
+- Treat the current product direction as an infrastructure systems lab with game-like interaction.
+- Demo 003 should avoid defaulting to traditional game loops, win states, or tycoon mechanics.
+- Economic and operational layers should appear as scenarios, pressure maps, interventions, telemetry, and explanations.
+
+### Rationale
+
+- The 2.5 direction is increasingly about model clarity, route claims, physical coherence, local review, and explanatory tooling.
+- That trajectory fits a simulator better than a conventional game demo.
+- Game design remains useful, but primarily as interaction design: making complex systems explorable, legible, and motivating.
+
+### Open Questions
+
+- What amount of gamification is useful before it starts distorting the model?
+- Should Demo 003 be framed as `Economic Pressure Simulator`, `Infrastructure Systems Lab`, or another proposal title?
+- Which interactions should remain analytical controls, and which can become game-like interventions?
+
+### Next Actions
+
+- Draft Demo 003 as a proposal for a gamified infrastructure simulator rather than a game demo.
+- Use the proposal to decide whether any actual game loop belongs before Demo 004.
