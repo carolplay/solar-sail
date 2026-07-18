@@ -452,3 +452,43 @@ Target Version: Project memory / ongoing process
 
 - Keep the mobile proposal unversioned until it is clear whether it belongs in a 0.2.x polish pass or a later dedicated mobile pass.
 - If accepted, convert it into a mobile spec with route card fields, map focus behavior, and mobile view policy.
+
+## 2026-07-18 - Implementation Merge And Tag Ownership
+
+### Decisions
+
+- Implementation / Operations may merge and push `main` after Planning accepts the completed implementation.
+- Planning should usually create the version tag after the accepted main push.
+- Implementation completion, Planning acceptance, main deployment, and release tagging are separate states.
+
+### Rationale
+
+- Implementation has enough context to perform the mechanical merge/push after approval.
+- Planning should focus on acceptance criteria and version identity rather than doing every deployment step itself.
+- Tags should mark reviewed release states, so they fit the Planning / project-management hat.
+
+### Next Actions
+
+- In future implementation handoffs, tell the implementation role whether it is authorized to merge/push after Planning acceptance.
+- Keep release tagging with Planning unless explicitly delegated.
+
+## 2026-07-18 - Demo 0.2.7 Science / Visual Alignment Handoff
+
+### Decisions
+
+- Accept the new Demo 0.2.7 direction as a science / visual alignment pass.
+- Convert `docs/demo-0.2.7-science-visual-alignment-proposal.md` into an implementation-ready spec.
+- Keep 0.2.7 focused on visual model clarity rather than new scenarios, CR3BP, full 3D, mobile redesign, or economy.
+- Hand implementation the spec `docs/demo-0.2.7-science-visual-alignment-spec.md`.
+
+### Rationale
+
+- Demo 0.2.6's text and model labels are ahead of the visuals.
+- The next useful step is to make Orbit, Gravity, and Low-Energy lenses visibly distinct.
+- Better visual clarity will make the later Demo 0.3.0 economy layer easier to understand because route and energy constraints will already read on screen.
+
+### Next Actions
+
+- Start an implementation session from current `main`.
+- Ask implementation to run build, preview, desktop review, mobile review, and write `docs/demo-0.2.7-science-visual-alignment-feedback.md`.
+- Planning should evaluate the implementation before merge/push/tag.

@@ -145,6 +145,7 @@ Outputs:
 - known gaps
 - feedback notes
 - test findings
+- merge / push to `main` after Planning approval
 - screenshots or local review records when useful
 - recommendations to revise spec, revise proposal, or reopen brainstorm
 
@@ -187,12 +188,14 @@ Avoid broad command approvals such as `node`, `python`, `bash`, or `curl`.
 - Planning / Organizer writes the implementation-ready spec from the proposal and research input.
 - Development / Operations implements, tests, iterates, and records deviations.
 - When Planning starts an implementation thread, Planning should evaluate the result after that thread completes.
+- After Planning accepts the implementation, Development / Operations may merge and push `main`.
+- Planning should usually create the release tag after merge/push acceptance.
 - Feedback decides whether remaining gaps can be fixed locally or must return to spec, proposal, or brainstorm.
 
 Minimal loop:
 
 ```text
-Planning -> Science/Game Design -> Proposal -> Planning Spec -> Development/Operations cycles -> Planning Evaluation -> Feedback
+Planning -> Science/Game Design -> Proposal -> Planning Spec -> Development/Operations cycles -> Planning Evaluation -> Implementation merge/push -> Planning tag -> Feedback
 ```
 
 This loop can be shortened when the change is small. The important rule is to keep the artifact type honest.

@@ -15,6 +15,7 @@ Use semantic demo versions in docs and references:
 | Demo 002 | Demo 0.2.0 | physics contract and route atlas |
 | Demo 002.5 | Demo 0.2.5 | physical coherence pass |
 | Demo 002.6 | Demo 0.2.6 | dynamic route scenarios proposal |
+| Demo 002.7 | Demo 0.2.7 | science / visual alignment pass |
 | Demo 003 | Demo 0.3.0 | economy / infrastructure pressure direction |
 
 Version-specific proposal/spec/feedback documents should use the same version in their filenames:
@@ -246,6 +247,20 @@ The current scale selector should also evolve toward scenario selection. The ana
 Scenario selection should define the playable/inspectable context, while scale remains a supporting camera or atlas function.
 
 See `docs/demo-0.2.6-dynamic-route-scenarios-proposal.md`.
+
+### Demo 0.2.7: Science / Visual Alignment
+
+Goal: make the scientific meaning of the three scenario lenses visible, not only explained in text.
+
+Demo 0.2.7 is a corrective polish pass after Demo 0.2.6. It should not expand the scenario set or add the economy model. It should align the visual models with their claims:
+
+- Orbit View becomes a scenario-filtered atlas.
+- Gravity View becomes conceptual energy terrain with visible wells, shelves, saddles, and proxy values.
+- Low-Energy Routes View becomes relay topology with dynamic edge state.
+
+The important product shift is that users should be able to see why a scenario matters before reading the labels.
+
+See `docs/demo-0.2.7-science-visual-alignment-proposal.md` and `docs/demo-0.2.7-science-visual-alignment-spec.md`.
 
 ### Demo 0.3.0: Network Metrics / Infrastructure Potential
 

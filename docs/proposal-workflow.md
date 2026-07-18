@@ -148,7 +148,9 @@ After implementation or prototype testing, write feedback that:
 
 Feedback can be written after one or more implementation / operations cycles. It should summarize the final tested state, not every intermediate attempt.
 
-When Planning creates a separate implementation thread, Planning should evaluate that thread's final state after completion before deciding whether to merge, send follow-up fixes, revise the spec, or reopen brainstorm. For long-running background work, this evaluation may be triggered by a thread monitor / heartbeat instead of manual polling.
+When Planning creates a separate implementation thread, Planning should evaluate that thread's final state after completion before deciding whether to accept the implementation, send follow-up fixes, revise the spec, or reopen brainstorm. For long-running background work, this evaluation may be triggered by a thread monitor / heartbeat instead of manual polling.
+
+After Planning accepts an implementation, the implementation role may merge and push `main`. Planning usually owns the release tag after the accepted main push, so the tag marks the reviewed version rather than the implementation's self-declared completion.
 
 If feedback can improve the previous step, do so:
 
