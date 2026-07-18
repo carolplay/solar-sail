@@ -1,10 +1,11 @@
 {
   "name": "solar-infrastructure-viewer",
-  "version": "0.1.0",
+  "version": "0.2.6",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build.mjs",
-    "preview": "node scripts/preview.mjs"
+    "check": "scripts/run-node.sh --check app.js",
+    "build": "scripts/run-node.sh scripts/build.mjs",
+    "preview": "scripts/run-node.sh scripts/preview.mjs"
   }
 }
