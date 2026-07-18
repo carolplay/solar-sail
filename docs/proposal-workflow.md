@@ -12,6 +12,15 @@ Proposal -> Spec -> Feedback
 
 The project is still discovering its physics model, visualization language, economic model, and eventual gameplay shape. A spec should be reserved for implementation-ready scope. Before that point, the useful artifact is a proposal: a structured argument with options, assumptions, evidence, risks, and recommended next steps.
 
+This loop combines two different kinds of work:
+
+```text
+Brainstorm = generate direction and proposals.
+Project management = control role handoffs, specs, feedback, and delivery state.
+```
+
+The same project lead may perform both, but the artifact type should make the active role clear. Proposals belong to direction-generation work. Specs, implementation handoffs, and feedback routing belong to project-management work.
+
 ## Why Proposal Before Spec
 
 Demo 0.1.0 implementation feedback showed several cases where the written spec was too firm for the actual discovery process:
@@ -139,6 +148,8 @@ After implementation or prototype testing, write feedback that:
 
 Feedback can be written after one or more implementation / operations cycles. It should summarize the final tested state, not every intermediate attempt.
 
+When Planning creates a separate implementation thread, Planning should evaluate that thread's final state after completion before deciding whether to merge, send follow-up fixes, revise the spec, or reopen brainstorm. For long-running background work, this evaluation may be triggered by a thread monitor / heartbeat instead of manual polling.
+
 If feedback can improve the previous step, do so:
 
 ```text
@@ -185,6 +196,31 @@ For small cycles, one file may contain all three sections if that keeps the proj
 If producing a proposal requires reading attached notes, deployed pages, external research, or files outside the current writable workspace, request the smallest required permission before relying on those sources.
 
 The same rule applies to spec and feedback. Do not claim implementation success, research support, or deployment behavior without the required local, browser, network, or filesystem access.
+
+## Local Implementation Permission Defaults
+
+Implementation / Operations work is expected to repeatedly start local preview servers and run local verification. These are narrow, project-local actions and should request persistent approval when the runtime asks.
+
+Recommended persistent command prefixes:
+
+```text
+npm run dev
+npm run build
+npm test
+node scripts/preview.mjs
+node scripts/build.mjs
+```
+
+Do not replace these with broad approvals such as:
+
+```text
+node
+python
+bash
+curl
+```
+
+Local preview approval should be treated as part of the implementation loop because desktop and mobile checks require a running app.
 
 ## Project Permission Intent
 

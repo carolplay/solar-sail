@@ -365,3 +365,90 @@ Target Version: Project memory / ongoing process
 
 - Keep `docs/proposal-workflow.md` as the process source of truth.
 - Let Demo 0.2.6 implementation produce working notes as needed, then final feedback against the spec.
+
+## 2026-07-17 - Local Preview Permission Defaults
+
+### Decisions
+
+- Treat local preview and verification as default parts of the implementation / operations loop.
+- Allow implementation sessions to request persistent approval for narrow project-local preview and test commands.
+- Recommended persistent prefixes are `npm run dev`, `npm run build`, `npm test`, `node scripts/preview.mjs`, and `node scripts/build.mjs`.
+- Avoid broad approvals such as `node`, `python`, `bash`, or `curl`.
+
+### Rationale
+
+- Implementation needs repeated desktop and mobile checks against a running app.
+- Repeated one-off approvals slow down development and create unnecessary interruptions.
+- Narrow command-prefix approvals preserve safety while removing the most common local-testing blocker.
+
+### Next Actions
+
+- Future implementation sessions should ask for persistent approval on these narrow prefixes when the runtime requests permission.
+
+## 2026-07-17 - Brainstorm vs Project Management
+
+### Decisions
+
+- Distinguish brainstorm from project management conceptually.
+- Brainstorm is responsible for direction generation, option exploration, rationale, open questions, and proposals.
+- Project management is responsible for role inputs/outputs, spec readiness, implementation handoff, feedback routing, and delivery state.
+- A project lead may hold both roles in small project contexts, but should name which hat is active.
+- Do not create a separate global project-management skill yet; first keep the distinction in project docs.
+
+### Rationale
+
+- The current `brainstorm-recorder` skill has accumulated some project-management behavior because the project lead often does both jobs.
+- Separating the concepts makes the process clearer without forcing premature tooling.
+- A separate project-management skill is worth considering only if handoff/status/role-control behavior becomes reusable across projects.
+
+### Next Actions
+
+- Use `docs/project-role-guidelines.md` to distinguish brainstorm and project-management responsibilities.
+- Revisit whether to create a dedicated project-management skill after more implementation/feedback cycles.
+
+## 2026-07-17 - Implementation Completion Evaluation
+
+### Decisions
+
+- When Planning starts an implementation thread, Planning should evaluate the completed implementation before merge or next handoff.
+- Evaluation should compare the implementation against the spec, review the Development / Operations feedback, rerun essential checks when practical, and decide whether to merge, request follow-up fixes, revise the spec, or reopen brainstorm.
+- For long-running background work, automatic evaluation can be handled by a thread monitor / heartbeat rather than manual polling.
+
+### Rationale
+
+- Implementation completion is not the same as project acceptance.
+- The project lead needs to protect scope, quality, and role feedback loops after a child thread finishes.
+- Automatic evaluation prevents completed implementation threads from becoming disconnected work products.
+
+### Next Actions
+
+- Use Planning Evaluation as the default step after Development / Operations cycles.
+- Consider creating a heartbeat/automation when future implementation threads are expected to run unattended.
+
+## 2026-07-17 - Mobile Scenario Experience Direction
+
+### Decisions
+
+- Mobile and desktop should diverge as product surfaces while sharing the same underlying scenario, route, telemetry, and time engine.
+- Mobile should be scenario- or campaign-oriented rather than view-heavy.
+- Mobile should not try to preserve full desktop view parity.
+- Treat desktop as an atlas / systems lab.
+- Treat mobile as a scenario briefing and route inspection surface.
+- Add `docs/mobile-scenario-experience-proposal.md`.
+
+### Rationale
+
+- The current mobile experience is not unplayable because it lacks features; it is unplayable because the desktop interaction model does not fit a phone.
+- Mobile cannot comfortably hold canvas, scenario selector, view selector, scale controls, inspector, telemetry, and schedule at the same time.
+- Route telemetry becomes more useful on mobile when presented as route cards, briefing steps, and operations feed items.
+
+### Open Questions
+
+- Should mobile scenario selection feel like tabs, cards, or a campaign list?
+- Should route cards be swipeable, stacked vertically, or a bottom sheet?
+- Should Gravity / Low-Energy explanations appear as guided steps or optional advanced drawers?
+
+### Next Actions
+
+- Keep the mobile proposal unversioned until it is clear whether it belongs in a 0.2.x polish pass or a later dedicated mobile pass.
+- If accepted, convert it into a mobile spec with route card fields, map focus behavior, and mobile view policy.

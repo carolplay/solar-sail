@@ -361,6 +361,29 @@ This can still borrow from game design, but the immediate product shape should b
 - explanations and telemetry instead of hidden scoring
 - iteration and review instead of a closed gameplay loop
 
+## Mobile Direction
+
+Mobile should not try to be a smaller desktop atlas.
+
+Desktop and mobile should share the same underlying scenario, route, telemetry, and time model, but diverge at the product surface:
+
+```text
+desktop = atlas / systems lab
+mobile = scenario briefing / route inspection surface
+```
+
+Mobile should become scenario- or campaign-oriented:
+
+- scenario first
+- route cards before dense map controls
+- focused map instead of full atlas
+- compact operations feed
+- guided explanation steps instead of full view parity
+
+Gravity View and Low-Energy Routes View should not be equal top-level mobile modes by default. They can appear as briefing steps, inline illustrations, or optional advanced drawers.
+
+See `docs/mobile-scenario-experience-proposal.md`.
+
 ## Post-Demo 0.1.0 Progression
 
 ### Stage 1: Visual Credibility

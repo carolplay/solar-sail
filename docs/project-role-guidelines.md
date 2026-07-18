@@ -8,6 +8,34 @@ The project is moving toward a gamified infrastructure simulator. Work should be
 
 These are roles, not separate teams. A single Codex session may hold multiple roles, and overlap is acceptable.
 
+## Brainstorm vs Project Management
+
+Brainstorm and project management should be conceptually separate.
+
+Brainstorm is about direction generation:
+
+- explore next-version possibilities
+- surface scientific, design, and product questions
+- compare options and tradeoffs
+- preserve rationale and open questions
+- produce or revise proposals
+
+Project management is about delivery control:
+
+- define role inputs and outputs
+- decide when proposal is ready for spec
+- write or approve implementation-ready specs
+- hand work to Development / Operations
+- track implementation notes, tests, deviations, and gaps
+- decide whether feedback should revise spec, revise proposal, or reopen brainstorm
+
+In many small project contexts, the project lead may do both. When that happens, explicitly name which hat is active:
+
+```text
+Brainstorm hat: generate and clarify direction.
+Project-management hat: constrain scope and move work through roles.
+```
+
 ## 1. Overall Planning / Evaluation
 
 Primary owner: Codex in planning mode for this project.
@@ -136,18 +164,35 @@ Implementation and operations may share one note while the version is being buil
 Build -> test -> fix -> retest can repeat several times before final feedback.
 ```
 
+Local permission rule:
+
+```text
+Local preview and verification are part of the default implementation loop.
+```
+
+When the runtime asks for approval, Development / Operations should request persistent approval for narrow project-local prefixes such as:
+
+- `npm run dev`
+- `npm run build`
+- `npm test`
+- `node scripts/preview.mjs`
+- `node scripts/build.mjs`
+
+Avoid broad command approvals such as `node`, `python`, `bash`, or `curl`.
+
 ## Handoff Rules
 
 - Planning turns brainstorm into proposal.
 - Science/Game Design supplies research and scenarios before spec when model quality matters.
 - Planning / Organizer writes the implementation-ready spec from the proposal and research input.
 - Development / Operations implements, tests, iterates, and records deviations.
+- When Planning starts an implementation thread, Planning should evaluate the result after that thread completes.
 - Feedback decides whether remaining gaps can be fixed locally or must return to spec, proposal, or brainstorm.
 
 Minimal loop:
 
 ```text
-Planning -> Science/Game Design -> Proposal -> Planning Spec -> Development/Operations cycles -> Feedback
+Planning -> Science/Game Design -> Proposal -> Planning Spec -> Development/Operations cycles -> Planning Evaluation -> Feedback
 ```
 
 This loop can be shortened when the change is small. The important rule is to keep the artifact type honest.
