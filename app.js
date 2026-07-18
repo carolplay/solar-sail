@@ -50,8 +50,16 @@ const reviewStatus = document.getElementById("reviewStatus");
 const DAY_MS = 86400000;
 const modelEpochLabel = "2026-07-09";
 const modelTimeSpan = "Approximate over decades near the documented epoch; not mission-grade.";
+const demoVersion = "Demo 0.2.7";
 const startDate = new Date(Date.UTC(2026, 6, 9, 12));
 const tilt = 0.47;
+const leoPeriodDays = 0.0646;
+const gravityWellDepthUnits = {
+  earth: { value: 1.00, label: "Earth escape-energy unit", basis: "Earth surface escape energy = 1.00 EEU" },
+  moon: { value: 0.05, label: "Earth escape-energy unit", basis: "Moon surface escape energy, normalized to Earth" },
+  mars: { value: 0.20, label: "Earth escape-energy unit", basis: "Mars surface escape energy, normalized to Earth" },
+  ceres: { value: 0.002, label: "Earth escape-energy unit", basis: "Ceres surface escape energy, normalized to Earth" }
+};
 
 const state = {
   simDays: 0,
@@ -238,7 +246,7 @@ const viewModels = {
   },
   gravity: {
     label: "Conceptual contour terrain",
-    note: "Scenario-normalized relative energy terrain; not a solved gravitational potential field.",
+    note: "Approximate orbit positions drive fixed-depth wells through a normalized proxy terrain; not a solved gravitational potential field.",
     frame: "Scenario energy lens",
     scale: "Normalized terrain",
     routes: "Terrain primitives"
@@ -267,16 +275,27 @@ const scenarios = {
       nodes: new Set(["earth", "leo-port", "moon", "earth-moon-l1", "sun-earth-l1", "sun-earth-l2"]),
       routes: new Set(["earth-moon-cargo-ladder", "leo-l1-shuttle", "lunar-surface-hop"])
     },
+    layerPreset: {
+      planets: true,
+      infrastructure: true,
+      lagrange: true,
+      cyclers: false,
+      fastTransfers: false,
+      lowEnergy: true,
+      probeOrbits: false,
+      labels: true
+    },
     terrain: {
       title: "Earth-Moon Gateway Terrain",
-      subtitle: "Earth well, LEO shelf, Moon well, and Earth-Moon L1/L2 saddle are normalized for logistics explanation.",
-      legend: ["Wells: Earth and Moon are local energy basins", "Shelves: LEO and gateway staging reduce route friction", "Saddles: L1/L2 act like passes, not gravity wells"],
+      subtitle: "Earth and Moon wells move with approximate orbit positions; LEO and L1/L2 are massless orbital markers.",
+      legend: ["Wells: Earth and Moon drive the contour field", "Shelves: LEO and gateway staging are massless markers", "Saddles: L1/L2 are pass markers, not gravity wells"],
       nodes: [
         { id: "earth", name: "Earth Well", x: -0.72, y: 0.00, z: -1.46, color: "#78bfff", role: "deep well" },
         { id: "leo-port", name: "LEO Shelf", x: -0.50, y: -0.18, z: -0.84, color: "#90f0c6", role: "exit shelf" },
         { id: "earth-moon-l1", name: "Earth-Moon L1/L2", x: -0.08, y: 0.08, z: -0.22, color: "#c6a7ff", role: "saddle pass" },
         { id: "moon", name: "Moon Well", x: 0.34, y: 0.22, z: -0.66, color: "#d7dce3", role: "secondary well" }
       ],
+      profile: ["earth", "leo-port", "earth-moon-l1", "moon"],
       wells: [
         { x: -0.72, y: 0.00, mass: 1.45, soft: 0.12 },
         { x: 0.34, y: 0.22, mass: 0.45, soft: 0.10 }
@@ -303,10 +322,20 @@ const scenarios = {
       nodes: new Set(["earth", "mars", "leo-port", "cycler", "mars-cycler-point", "phobos-port", "deimos-port"]),
       routes: new Set(["earth-mars-cycler-service", "earth-mars-fast-window", "mars-terminal-taxi", "cycler-line", "earth-mars-fast"])
     },
+    layerPreset: {
+      planets: true,
+      infrastructure: true,
+      lagrange: false,
+      cyclers: true,
+      fastTransfers: true,
+      lowEnergy: false,
+      probeOrbits: false,
+      labels: true
+    },
     terrain: {
       title: "Earth-Mars Service Terrain",
-      subtitle: "A heliocentric background slope frames scheduled windows without drawing the Sun as a dominant well.",
-      legend: ["Slope: heliocentric transfer terrain is compressed", "Shelves: ports and cycler intercepts absorb taxi burden", "Saddles: service windows are timing passes, not solved trajectories"],
+      subtitle: "Earth and Mars wells move with approximate orbit positions; ports and intercepts are massless markers.",
+      legend: ["Wells: Earth and Mars drive the contour field", "Markers: ports and cycler intercepts do not create wells", "Passes: service windows are timing markers, not solved trajectories"],
       nodes: [
         { id: "earth", name: "Earth Port Shelf", x: -0.76, y: -0.10, z: -0.72, color: "#78bfff", role: "origin well" },
         { id: "cycler", name: "Cycler Service", x: -0.10, y: 0.10, z: -0.20, color: "#ffd06f", role: "schedule shelf" },
@@ -314,6 +343,7 @@ const scenarios = {
         { id: "phobos-port", name: "Phobos Port", x: 0.74, y: 0.12, z: -0.52, color: "#9ff1c7", role: "arrival shelf" },
         { id: "mars", name: "Mars Well", x: 0.90, y: 0.00, z: -0.82, color: "#e9785f", role: "destination well" }
       ],
+      profile: ["earth", "cycler", "mars-cycler-point", "phobos-port", "mars"],
       wells: [
         { x: -0.76, y: -0.10, mass: 0.75, soft: 0.15 },
         { x: 0.90, y: 0.00, mass: 0.72, soft: 0.16 }
@@ -340,10 +370,20 @@ const scenarios = {
       nodes: new Set(["earth", "mars", "ceres", "vesta", "earth-l4", "earth-l5", "sun-earth-l1", "sun-earth-l2", "earth-moon-l1", "deimos-port", "ceres-drift-hub"]),
       routes: new Set(["volatile-belt-drift", "lagrange-relay-chain", "mars-ceres-cargo-handoff", "earth-ceres-low", "mars-ceres-planned"])
     },
+    layerPreset: {
+      planets: true,
+      infrastructure: true,
+      lagrange: true,
+      cyclers: false,
+      fastTransfers: false,
+      lowEnergy: true,
+      probeOrbits: false,
+      labels: true
+    },
     terrain: {
       title: "Lagrange Relay And Volatile Terrain",
-      subtitle: "Solar background slope, relay shelves, and saddle passes dominate the slow-cargo route theater.",
-      legend: ["Slope: solar energy gradient is an offstage background", "Shelves: relay and storage nodes hold cargo between windows", "Saddles: Lagrange regions support handoffs, not free wells"],
+      subtitle: "Earth, Mars, and Ceres wells move with approximate orbit positions; relay shelves are massless markers.",
+      legend: ["Wells: massive bodies drive the contour field", "Markers: relay and storage shelves do not create wells", "Saddles: Lagrange regions mark handoffs, not free wells"],
       nodes: [
         { id: "sun-earth-l1", name: "Sun-Earth L1/L2", x: -0.88, y: -0.20, z: -0.16, color: "#ffa96f", role: "relay saddle" },
         { id: "earth-l4", name: "L4/L5 Storage", x: -0.52, y: 0.30, z: -0.12, color: "#ff91bb", role: "storage shelf" },
@@ -351,6 +391,7 @@ const scenarios = {
         { id: "deimos-port", name: "Mars Gateway", x: 0.42, y: 0.12, z: -0.22, color: "#b8f3dd", role: "relay shelf" },
         { id: "ceres", name: "Ceres Volatiles", x: 0.94, y: -0.08, z: -0.44, color: "#c5cbd4", role: "bulk cargo well" }
       ],
+      profile: ["sun-earth-l1", "earth-l4", "earth-moon-l1", "deimos-port", "ceres"],
       wells: [
         { x: 0.94, y: -0.08, mass: 0.45, soft: 0.18 },
         { x: 0.42, y: 0.12, mass: 0.28, soft: 0.18 }
@@ -726,7 +767,7 @@ const gatewayNodes = [
     infrastructure: "Very high",
     color: "#90f0c6",
     radius: 4.5,
-    position: () => offsetFrom("earth", 0.00072, bodyAngle(getBody("earth")) + 1.4)
+    position: () => offsetFrom("earth", 0.00072, leoAngle())
   },
   {
     id: "moon",
@@ -1019,14 +1060,14 @@ const explanationEntries = {
     title: "Gravity Well View",
     definition: "Gravity View is a scenario-normalized conceptual terrain view of relative energy cost.",
     matters: "It explains why wells, shelves, saddles, passes, and background slopes shape gateway logistics.",
-    models: "Demo 0.2.6 uses parameterized primitives for wells, shelves, saddle passes, and solar background slopes.",
+    models: "Demo 0.2.7 uses parameterized primitives for wells, shelves, saddle passes, route profile cues, and solar background slopes.",
     simplifies: "It is not a solved gravitational potential field, not CR3BP, and not a mission-grade delta-v surface."
   },
   "low-energy-routes-view": {
     title: "Low-Energy Routes View",
     definition: "Low-Energy Routes View shows stable conceptual route families with dynamic route windows.",
     matters: "It exposes the future economic inputs: cadence, waiting, availability, reliability, capacity, and route suitability.",
-    models: "Demo 0.2.6 uses a heuristic route-window model where topology stays stable while availability and flow change over simulation time.",
+    models: "Demo 0.2.7 uses a heuristic route-window model where topology stays stable while availability and flow change over simulation time.",
     simplifies: "It does not solve invariant manifolds, CR3BP tubes, launch windows, or any real mission trajectory."
   },
   "leo-port": {
@@ -1090,7 +1131,7 @@ const explanationEntries = {
     definition: "A low-energy transfer uses gravitational structure and time to reduce propulsion needs.",
     matters: "Slow cargo can use these corridors like trade winds, exchanging speed for lower energy cost.",
     models: "The demo shows manifold-inspired corridors as educational route families.",
-    simplifies: "No real invariant manifold is calculated in Demo 0.2.6."
+    simplifies: "No real invariant manifold is calculated in Demo 0.2.7."
   },
   "launch-window": {
     title: "Launch Window",
@@ -1103,7 +1144,7 @@ const explanationEntries = {
     title: "Fuel Depot",
     definition: "A fuel depot stores propellant near useful route junctions.",
     matters: "Depots can turn difficult trips into chained legs and make ports more valuable.",
-    models: "Demo 0.2.6 treats depots as route-atlas concepts, not simulated inventory.",
+    models: "Demo 0.2.7 treats depots as route-atlas concepts, not simulated inventory.",
     simplifies: "There is no economy, extraction, or propellant flow model yet."
   },
   gateway: {
@@ -1262,6 +1303,10 @@ function lagrangeOrbit(parentId, offset) {
 
 function lunarAngle() {
   return bodyAngle(getBody("earth")) + 0.7 + (state.simDays / 27.32) * Math.PI * 2;
+}
+
+function leoAngle() {
+  return bodyAngle(getBody("earth")) + 1.4 + (state.simDays / leoPeriodDays) * Math.PI * 2;
 }
 
 function marsMoonAngle(offset) {
@@ -1432,6 +1477,15 @@ function scenarioEmphasisFor(id) {
 
 function currentScenarioRoutes() {
   return dynamicRouteFamilies.filter((route) => route.scenarioId === state.scenarioId);
+}
+
+function applyScenarioLayerPreset() {
+  const preset = currentScenario().layerPreset;
+  if (!preset) return;
+  state.layers = { ...state.layers, ...preset };
+  layerToggles.forEach((toggle) => {
+    toggle.checked = state.layers[toggle.dataset.layer] !== false;
+  });
 }
 
 function routeWindowMetrics(route, day = state.simDays) {
@@ -1790,6 +1844,18 @@ function pointOnRoutePath(points, progress, bend = -0.10) {
   };
 }
 
+function pointOnPolyline(points, progress) {
+  if (points.length === 1) return points[0];
+  const segments = points.length - 1;
+  const scaled = Math.min(0.999, Math.max(0, progress)) * segments;
+  const index = Math.min(segments - 1, Math.floor(scaled));
+  const tValue = scaled - index;
+  return {
+    x: lerp(points[index].x, points[index + 1].x, tValue),
+    y: lerp(points[index].y, points[index + 1].y, tValue)
+  };
+}
+
 function drawLocalOrbit(parentId, distance, color) {
   const center = getBodyWorld(parentId);
   ctx.beginPath();
@@ -1917,13 +1983,32 @@ function drawGravityView() {
   state.labelBoxes = [];
   drawSpace();
   const scenario = currentScenario();
+  const primitives = dynamicGravityPrimitives();
   drawConceptTitle(scenario.terrain.title, `${scenario.terrain.subtitle} Not a solved gravitational potential field.`);
-  drawPotentialSurface();
+  drawSolarSlope(scenario.terrain.slope || { x: 0, y: 0 }, primitives);
+  drawPotentialSurface(primitives);
+  drawFixedWellDepthGauge();
   scenario.terrain.nodes.forEach((node) => {
-    const p = projectIso(node.x, node.y, node.z);
-    drawConceptNode(node, p.x, p.y, node.role);
+    if (!gravityNodeLayerVisible(node)) return;
+    const dynamicNode = dynamicGravityNode(node);
+    const p = projectIso(dynamicNode.x, dynamicNode.y, dynamicNode.z);
+    drawConceptNode(dynamicNode, p.x, p.y, gravityNodeLabelHint(dynamicNode), layerEnabled("labels"));
   });
   drawConceptLegend(scenario.terrain.legend);
+}
+
+function gravityNodeLayerVisible(node) {
+  if (fixedWellDepthFor(node.id)) return layerEnabled("planets");
+  if (node.id.includes("-l1") || node.id.includes("-l2") || node.id.includes("-l4") || node.id.includes("-l5") || node.role.includes("saddle") || node.role.includes("pass")) {
+    return layerEnabled("lagrange");
+  }
+  return layerEnabled("infrastructure");
+}
+
+function gravityNodeLabelHint(node) {
+  const fixedDepth = fixedWellDepthFor(node.id);
+  if (!fixedDepth) return node.role;
+  return `${node.role}; ${formatWellDepth(fixedDepth.value)}`;
 }
 
 function drawTransferView() {
@@ -1932,15 +2017,11 @@ function drawTransferView() {
   drawSpace();
   const scenario = currentScenario();
   drawConceptTitle("Low-Energy Routes View", `${scenario.name} | Heuristic route-window model; route families are stable, availability and flow are dynamic.`);
-  drawScenarioRouteFamiliesConcept();
-  scenario.terrain.nodes.forEach((node) => {
-    const p = projectIso(node.x, node.y, node.z);
-    drawConceptNode(node, p.x, p.y, node.role);
-  });
+  drawRelayTopology();
   const active = currentScenarioRoutes()[0];
   const metrics = active ? routeWindowMetrics(active) : null;
   drawConceptLegend([
-    "Faint corridors are stable conceptual route families",
+    "Nodes are stable relay, depot, storage, source, sink, and handoff roles",
     metrics ? `Current lead route: ${active.name}; wait ${formatEta(metrics.wait)}; flow ${Math.round(metrics.flow * 100)}%` : "Availability uses heuristic cadence and duty cycle",
     "Not CR3BP, not real manifolds, and not mission-planning telemetry"
   ]);
@@ -1949,12 +2030,32 @@ function drawTransferView() {
 function drawConceptTitle(title, subtitle) {
   const x = state.width > 900 ? Math.max(420, state.width * 0.34) : 24;
   const y = state.width > 900 ? 112 : 360;
+  const maxWidth = state.width > 900 ? Math.max(360, state.width - x - 390) : state.width - 48;
   ctx.fillStyle = "#f4f7fb";
   ctx.font = "700 24px Inter, system-ui";
-  ctx.fillText(title, x, y);
+  ctx.fillText(title, x, y, maxWidth);
   ctx.fillStyle = "#b8c6d6";
   ctx.font = "500 14px Inter, system-ui";
-  ctx.fillText(subtitle, x, y + 26);
+  drawWrappedCanvasText(subtitle, x, y + 26, maxWidth, 18, 2);
+}
+
+function drawWrappedCanvasText(text, x, y, maxWidth, lineHeight, maxLines = 2) {
+  const words = text.split(/\s+/);
+  let line = "";
+  let drawn = 0;
+  for (let i = 0; i < words.length; i += 1) {
+    const test = line ? `${line} ${words[i]}` : words[i];
+    if (ctx.measureText(test).width > maxWidth && line) {
+      const suffix = drawn === maxLines - 1 ? "..." : "";
+      ctx.fillText(`${line}${suffix}`, x, y + drawn * lineHeight, maxWidth);
+      drawn += 1;
+      if (drawn >= maxLines) return;
+      line = words[i];
+    } else {
+      line = test;
+    }
+  }
+  if (line && drawn < maxLines) ctx.fillText(line, x, y + drawn * lineHeight, maxWidth);
 }
 
 function projectIso(x, y, z = 0) {
@@ -1972,6 +2073,161 @@ function projectIso(x, y, z = 0) {
     x: origin.x + (rotated.x - rotated.y) * scale * 0.92,
     y: origin.y + (rotated.x + rotated.y) * scale * state.concept.pitch - z * scale * 0.52
   };
+}
+
+function dynamicGravityNode(node) {
+  const position = dynamicGravityPositionFor(node.id);
+  if (!position) return node;
+  return { ...node, x: position.x, y: position.y };
+}
+
+function dynamicGravityPositionFor(id) {
+  const map = dynamicGravityLayout();
+  return map.get(id) || null;
+}
+
+function dynamicGravityLayout() {
+  if (state.scenarioId === "earth-moon") return earthMoonGravityLayout();
+  if (state.scenarioId === "earth-mars") return earthMarsGravityLayout();
+  return volatileGravityLayout();
+}
+
+function earthMoonGravityLayout() {
+  const map = new Map();
+  const earth = { x: -0.46, y: 0.02 };
+  const moonAngleValue = lunarAngle();
+  const leoAngleValue = leoAngle();
+  const moon = {
+    x: earth.x + Math.cos(moonAngleValue) * 0.82,
+    y: earth.y + Math.sin(moonAngleValue) * 0.58
+  };
+  const leo = {
+    x: earth.x + Math.cos(leoAngleValue) * 0.22,
+    y: earth.y + Math.sin(leoAngleValue) * 0.16
+  };
+  const eml1 = {
+    x: lerp(earth.x, moon.x, 0.66),
+    y: lerp(earth.y, moon.y, 0.66)
+  };
+  map.set("earth", earth);
+  map.set("moon", moon);
+  map.set("leo-port", leo);
+  map.set("earth-moon-l1", eml1);
+  return map;
+}
+
+function earthMarsGravityLayout() {
+  const map = normalizedOrbitLayout(["earth", "mars", "cycler"]);
+  const earth = map.get("earth");
+  const mars = map.get("mars");
+  if (earth) {
+    map.set("leo-port", {
+      x: earth.x + Math.cos(leoAngle()) * 0.12,
+      y: earth.y + Math.sin(leoAngle()) * 0.09
+    });
+  }
+  if (mars) {
+    map.set("mars-cycler-point", {
+      x: mars.x + Math.cos(marsMoonAngle(0.9)) * 0.16,
+      y: mars.y + Math.sin(marsMoonAngle(0.9)) * 0.11
+    });
+    map.set("phobos-port", {
+      x: mars.x + Math.cos(marsMoonAngle(1.0)) * 0.10,
+      y: mars.y + Math.sin(marsMoonAngle(1.0)) * 0.07
+    });
+  }
+  return map;
+}
+
+function volatileGravityLayout() {
+  const map = normalizedOrbitLayout(["earth", "mars", "ceres"]);
+  const earth = map.get("earth");
+  const mars = map.get("mars");
+  const ceres = map.get("ceres");
+  if (earth) {
+    const earthAngle = bodyAngle(getBody("earth"));
+    map.set("sun-earth-l1", {
+      x: earth.x + Math.cos(earthAngle + Math.PI) * 0.13,
+      y: earth.y + Math.sin(earthAngle + Math.PI) * 0.09
+    });
+    map.set("earth-l4", {
+      x: earth.x + Math.cos(earthAngle + Math.PI / 3) * 0.30,
+      y: earth.y + Math.sin(earthAngle + Math.PI / 3) * 0.22
+    });
+    map.set("earth-moon-l1", {
+      x: earth.x + Math.cos(lunarAngle()) * 0.16,
+      y: earth.y + Math.sin(lunarAngle()) * 0.12
+    });
+  }
+  if (mars) {
+    map.set("deimos-port", {
+      x: mars.x + Math.cos(marsMoonAngle(2.4)) * 0.14,
+      y: mars.y + Math.sin(marsMoonAngle(2.4)) * 0.10
+    });
+  }
+  if (ceres) {
+    map.set("ceres-drift-hub", {
+      x: ceres.x - 0.12,
+      y: ceres.y + 0.08
+    });
+  }
+  return map;
+}
+
+function normalizedOrbitLayout(ids) {
+  const worlds = ids.map((id) => ({ id, world: getBodyWorld(id) }));
+  const center = {
+    x: worlds.reduce((sum, item) => sum + item.world.x, 0) / worlds.length,
+    y: worlds.reduce((sum, item) => sum + item.world.y, 0) / worlds.length
+  };
+  const radius = Math.max(0.001, ...worlds.map((item) => Math.hypot(item.world.x - center.x, item.world.y - center.y)));
+  const scale = 0.88 / radius;
+  return new Map(worlds.map((item) => [item.id, {
+    x: (item.world.x - center.x) * scale,
+    y: (item.world.y - center.y) * scale * 0.72
+  }]));
+}
+
+function dynamicGravityPrimitives() {
+  const terrain = currentScenario().terrain;
+  const layout = dynamicGravityLayout();
+  const wells = gravityBodyIdsForScenario()
+    .map((id) => {
+      const position = layout.get(id);
+      const depth = fixedWellDepthFor(id);
+      if (!position || !depth) return null;
+      return {
+        id,
+        x: position.x,
+        y: position.y,
+        mass: visualMassForWellDepth(depth.value),
+        soft: id === "earth" ? 0.11 : id === "moon" ? 0.09 : 0.14
+      };
+    })
+    .filter(Boolean);
+  const saddles = terrain.saddles.map((saddle, index) => {
+    const node = terrain.nodes.find((item) => item.role.includes("saddle") || item.role.includes("pass"));
+    const dynamicNode = node ? dynamicGravityNode(node) : null;
+    return dynamicNode && index === 0
+      ? { ...saddle, x: dynamicNode.x, y: dynamicNode.y }
+      : saddle;
+  });
+  const shelves = terrain.shelves.map((shelf, index) => {
+    const shelfNodes = terrain.nodes.filter((item) => item.role.includes("shelf"));
+    const dynamicNode = shelfNodes[index] ? dynamicGravityNode(shelfNodes[index]) : null;
+    return dynamicNode ? { ...shelf, x: dynamicNode.x, y: dynamicNode.y } : shelf;
+  });
+  return { wells, saddles, shelves };
+}
+
+function gravityBodyIdsForScenario() {
+  if (state.scenarioId === "earth-moon") return ["earth", "moon"];
+  if (state.scenarioId === "earth-mars") return ["earth", "mars"];
+  return ["earth", "mars", "ceres"];
+}
+
+function visualMassForWellDepth(value) {
+  return Math.max(0.16, Math.pow(value, 0.42));
 }
 
 function gravityWellAnchors() {
@@ -2005,91 +2261,208 @@ function lowEnergyConceptNodes() {
   ];
 }
 
-function effectivePotential(x, y) {
+function effectivePotential(x, y, primitives = dynamicGravityPrimitives()) {
   const terrain = currentScenario().terrain;
-  const wells = terrain.wells;
+  const wells = primitives.wells;
   const slope = terrain.slope || { x: 0, y: 0 };
   const centrifugal = 0.09 * (x * x + y * y) + x * slope.x + y * slope.y;
   const pull = wells.reduce((sum, well) => {
     const d = Math.hypot(x - well.x, y - well.y) + well.soft;
     return sum - well.mass / d;
   }, 0);
-  const saddleLift = terrain.saddles.reduce((sum, saddle) => {
-    return sum + saddle.lift * Math.exp(-Math.hypot(x - saddle.x, y - saddle.y) * saddle.width);
-  }, 0);
-  const shelfLift = terrain.shelves.reduce((sum, shelf) => {
-    return sum + shelf.lift * Math.exp(-Math.hypot(x - shelf.x, y - shelf.y) * shelf.width);
-  }, 0);
-  return Math.max(-1.70, Math.min(0.62, pull * 0.31 + centrifugal + saddleLift + shelfLift));
+  return Math.max(-1.70, Math.min(0.62, pull * 0.31 + centrifugal));
 }
 
-function drawPotentialSurface() {
-  const step = state.width > 900 ? 0.09 : 0.12;
+function drawPotentialSurface(primitives = dynamicGravityPrimitives()) {
+  drawTerrainColorWash(primitives);
+  const levels = [];
+  for (let level = -1.34; level <= -0.14; level += 0.10) levels.push(Number(level.toFixed(2)));
+  levels.forEach((level, index) => drawContour(level, contourColorForLevel(level), index, primitives));
+}
+
+function contourColorForLevel(level) {
+  if (level < -0.98) return "rgba(92, 159, 236, 0.24)";
+  if (level < -0.72) return "rgba(126, 205, 244, 0.30)";
+  if (level < -0.48) return "rgba(184, 181, 255, 0.31)";
+  if (level < -0.28) return "rgba(157, 241, 199, 0.28)";
+  return "rgba(255, 208, 111, 0.24)";
+}
+
+function drawTerrainColorWash(primitives = dynamicGravityPrimitives()) {
   ctx.save();
   ctx.globalCompositeOperation = "screen";
-  for (let y = -0.78; y <= 0.80; y += step) {
-    for (let x = -1.36; x <= 1.32; x += step) {
-      const z = effectivePotential(x, y);
-      const p = projectIso(x, y, z - 0.015);
-      const alpha = Math.max(0.015, Math.min(0.085, (z + 1.7) * 0.035));
-      ctx.fillStyle = `rgba(119, 203, 255, ${alpha})`;
-      ctx.fillRect(p.x - 1, p.y - 1, 2, 2);
-    }
-  }
+  primitives.wells.forEach((well) => {
+    const center = projectIso(well.x, well.y, effectivePotential(well.x, well.y, primitives) + 0.02);
+    const radius = (95 + well.mass * 52) * (state.width > 900 ? 1 : 0.72);
+    const gradient = ctx.createRadialGradient(center.x, center.y, 0, center.x, center.y, radius);
+    gradient.addColorStop(0, "rgba(76, 144, 226, 0.24)");
+    gradient.addColorStop(0.45, "rgba(76, 144, 226, 0.10)");
+    gradient.addColorStop(1, "rgba(76, 144, 226, 0)");
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+  });
   ctx.restore();
-
-  ctx.lineWidth = 0.75;
-  for (let y = -0.75; y <= 0.78; y += step) {
-    ctx.beginPath();
-    for (let x = -1.35; x <= 1.32; x += step) {
-      const z = effectivePotential(x, y);
-      const p = projectIso(x, y, z);
-      if (x <= -1.34) ctx.moveTo(p.x, p.y);
-      else ctx.lineTo(p.x, p.y);
-    }
-    ctx.strokeStyle = "rgba(119, 203, 255, 0.13)";
-    ctx.stroke();
-  }
-  for (let x = -1.35; x <= 1.32; x += step) {
-    ctx.beginPath();
-    for (let y = -0.75; y <= 0.78; y += step) {
-      const z = effectivePotential(x, y);
-      const p = projectIso(x, y, z);
-      if (y <= -0.74) ctx.moveTo(p.x, p.y);
-      else ctx.lineTo(p.x, p.y);
-    }
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.075)";
-    ctx.stroke();
-  }
-  drawContour(-0.84, "rgba(120, 191, 255, 0.30)");
-  drawContour(-0.58, "rgba(198, 167, 255, 0.34)");
-  drawContour(-0.34, "rgba(255, 169, 111, 0.30)");
 }
 
-function drawContour(level, color) {
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 1.2;
-  ctx.setLineDash([4, 8]);
-  for (let y = -0.7; y <= 0.72; y += 0.14) {
-    ctx.beginPath();
-    let started = false;
-    for (let x = -1.3; x <= 1.28; x += 0.07) {
-      const z = effectivePotential(x, y);
-      if (Math.abs(z - level) < 0.035) {
-        const p = projectIso(x, y, z + 0.03);
-        if (!started) {
-          ctx.moveTo(p.x, p.y);
-          started = true;
-        } else {
-          ctx.lineTo(p.x, p.y);
-        }
-      } else {
-        started = false;
-      }
-    }
-    ctx.stroke();
-  }
+function drawSolarSlope(slope, primitives = dynamicGravityPrimitives()) {
+  const strength = Math.min(1, Math.hypot(slope.x, slope.y) * 4);
+  if (strength <= 0.04) return;
+  const left = projectIso(-1.32, 0.68, effectivePotential(-1.32, 0.68, primitives) + 0.03);
+  const right = projectIso(1.20, -0.62, effectivePotential(1.20, -0.62, primitives) + 0.03);
+  const gradient = ctx.createLinearGradient(left.x, left.y, right.x, right.y);
+  gradient.addColorStop(0, "rgba(255, 169, 111, 0.02)");
+  gradient.addColorStop(1, `rgba(255, 169, 111, ${0.08 + strength * 0.13})`);
+  ctx.save();
+  ctx.globalCompositeOperation = "screen";
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, state.width, state.height);
+  ctx.restore();
+}
+
+function drawFixedWellDepthGauge() {
+  const wells = currentScenario().terrain.nodes
+    .map((node) => ({ node, depth: fixedWellDepthFor(node.id) }))
+    .filter((item) => item.depth);
+  if (!wells.length) return;
+
+  const x = state.width > 900 ? Math.max(488, state.width * 0.40) : 24;
+  const y = state.width > 900 ? 172 : 414;
+  const width = state.width > 900 ? Math.min(440, state.width - x - 410) : state.width - 48;
+  if (width < 230) return;
+  const rowHeight = 18;
+  const height = 30 + wells.length * rowHeight;
+  const scan = (performance.now() * 0.00018) % 1;
+
+  ctx.save();
+  roundedRect(x, y, width, height, 7);
+  ctx.fillStyle = "rgba(8, 12, 17, 0.58)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.11)";
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#9edbff";
+  ctx.font = "800 11px Inter, system-ui";
+  ctx.fillText("Fixed well depth (EEU)", x + 12, y + 18);
+  ctx.fillStyle = "#98a9ba";
+  ctx.font = "600 10px Inter, system-ui";
+  ctx.fillText("Earth escape-energy unit; values stay fixed", x + 150, y + 18, width - 162);
+
+  wells.forEach(({ node, depth }, index) => {
+    const rowY = y + 34 + index * rowHeight;
+    const labelWidth = Math.min(110, width * 0.34);
+    const barX = x + labelWidth + 18;
+    const barWidth = width - labelWidth - 92;
+    const normalized = Math.sqrt(Math.min(1, depth.value));
+    const pulse = 0.55 + Math.sin(performance.now() * 0.003 + index) * 0.12;
+    ctx.fillStyle = "#dce8f4";
+    ctx.font = "700 11px Inter, system-ui";
+    ctx.fillText(node.name.replace(" Well", ""), x + 12, rowY, labelWidth);
+    ctx.fillStyle = "rgba(255,255,255,0.08)";
+    roundedRect(barX, rowY - 9, barWidth, 6, 3);
+    ctx.fill();
+    ctx.fillStyle = withAlpha(node.color, 0.38 + pulse * 0.24);
+    roundedRect(barX, rowY - 9, Math.max(2, barWidth * normalized), 6, 3);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "800 11px Inter, system-ui";
+    ctx.fillText(formatWellDepth(depth.value), barX + barWidth + 10, rowY);
+  });
+
+  const scanX = x + 12 + (width - 24) * scan;
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.24)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(scanX, y + 25);
+  ctx.lineTo(scanX, y + height - 10);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawEnergyProfileCue() {
+  const nodes = currentScenario().terrain.nodes;
+  const profileIds = currentScenario().terrain.profile || nodes.map((node) => node.id);
+  const profile = profileIds.map((id) => nodes.find((node) => node.id === id)).filter(Boolean);
+  if (profile.length < 2) return;
+  const projected = profile.map((node) => projectIso(node.x, node.y, node.z + 0.13));
+  ctx.save();
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.26)";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8, 8]);
+  ctx.beginPath();
+  projected.forEach((point, index) => {
+    if (index === 0) ctx.moveTo(point.x, point.y);
+    else ctx.lineTo(point.x, point.y);
+  });
+  ctx.stroke();
   ctx.setLineDash([]);
+  const progress = ((state.simDays * 0.012) % 1 + 1) % 1;
+  const marker = pointOnPolyline(projected, progress);
+  ctx.beginPath();
+  ctx.arc(marker.x, marker.y, 5.5, 0, Math.PI * 2);
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawContour(level, color, index = 0, primitives = dynamicGravityPrimitives()) {
+  const step = state.width > 900 ? 0.035 : 0.055;
+  const minX = -1.36;
+  const maxX = 1.32;
+  const minY = -0.78;
+  const maxY = 0.80;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = index % 3 === 0 ? 1.08 : 0.72;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  for (let y = minY; y < maxY; y += step) {
+    for (let x = minX; x < maxX; x += step) {
+      const cell = [
+        { x, y, z: effectivePotential(x, y, primitives) },
+        { x: x + step, y, z: effectivePotential(x + step, y, primitives) },
+        { x: x + step, y: y + step, z: effectivePotential(x + step, y + step, primitives) },
+        { x, y: y + step, z: effectivePotential(x, y + step, primitives) }
+      ];
+      contourSegmentsForCell(cell, level).forEach(([from, to]) => {
+        const a = projectIso(from.x, from.y, level + 0.035);
+        const b = projectIso(to.x, to.y, level + 0.035);
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+      });
+    }
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function contourSegmentsForCell(cell, level) {
+  const edges = [
+    [cell[0], cell[1]],
+    [cell[1], cell[2]],
+    [cell[2], cell[3]],
+    [cell[3], cell[0]]
+  ];
+  const crossings = edges
+    .map(([from, to]) => interpolateContourEdge(from, to, level))
+    .filter(Boolean);
+  if (crossings.length < 2) return [];
+  if (crossings.length === 2) return [[crossings[0], crossings[1]]];
+  return [
+    [crossings[0], crossings[1]],
+    [crossings[2], crossings[3]]
+  ];
+}
+
+function interpolateContourEdge(from, to, level) {
+  const fromDelta = from.z - level;
+  const toDelta = to.z - level;
+  if (fromDelta === 0 && toDelta === 0) return null;
+  if ((fromDelta > 0) === (toDelta > 0)) return null;
+  const tValue = Math.max(0, Math.min(1, (level - from.z) / (to.z - from.z || 1)));
+  return {
+    x: lerp(from.x, to.x, tValue),
+    y: lerp(from.y, to.y, tValue)
+  };
 }
 
 function drawScenarioRouteFamiliesConcept() {
@@ -2111,6 +2484,166 @@ function drawScenarioRouteFamiliesConcept() {
     }
     state.hitTargets.push({ id: route.id, x: marker.x, y: marker.y, radius: 24 });
   });
+}
+
+function topologyNodesForScenario() {
+  const roles = {
+    "earth-moon": [
+      ["earth", "Earth Demand", "sink / demand node", 0.12, 0.62],
+      ["leo-port", "LEO Depot", "depot", 0.30, 0.42],
+      ["earth-moon-l1", "EM L1/L2 Gateway", "gateway", 0.52, 0.34],
+      ["moon", "Lunar Surface", "source / sink", 0.76, 0.55]
+    ],
+    "earth-mars": [
+      ["earth", "Earth Demand", "sink / demand node", 0.10, 0.58],
+      ["leo-port", "LEO Depot", "depot", 0.25, 0.38],
+      ["cycler", "Cycler Relay", "relay", 0.48, 0.28],
+      ["mars-cycler-point", "Mars Handoff", "handoff node", 0.66, 0.42],
+      ["phobos-port", "Phobos Gateway", "gateway", 0.82, 0.30],
+      ["mars", "Mars Demand", "sink / demand node", 0.90, 0.62]
+    ],
+    "lagrange-volatile": [
+      ["sun-earth-l1", "SE L1/L2 Gateway", "gateway", 0.12, 0.50],
+      ["earth-moon-l1", "EM Handoff", "handoff node", 0.30, 0.34],
+      ["earth-l5", "L4/L5 Storage", "storage shelf", 0.46, 0.52],
+      ["deimos-port", "Mars Relay Shelf", "relay", 0.64, 0.32],
+      ["ceres-drift-hub", "Belt Depot", "depot", 0.78, 0.52],
+      ["ceres", "Ceres Volatiles", "source", 0.92, 0.38]
+    ]
+  };
+  return (roles[state.scenarioId] || roles["earth-moon"]).map(([id, name, role, x, y]) => ({
+    id,
+    name,
+    role,
+    x,
+    y,
+    color: colorForId(id)
+  }));
+}
+
+function colorForId(id) {
+  if (id === "cycler") return cyclerOrbit.color;
+  const body = bodies.find((item) => item.id === id);
+  if (body) return body.color;
+  const node = gatewayNodes.find((item) => item.id === id);
+  return node?.color || "#9edbff";
+}
+
+function topologyPoint(node) {
+  const left = state.width > 900 ? Math.max(430, state.width * 0.32) : 24;
+  const right = state.width > 900 ? state.width - 390 : state.width - 24;
+  const top = state.width > 900 ? 180 : 360;
+  const bottom = state.width > 900 ? state.height - 150 : state.height - 120;
+  return {
+    x: left + node.x * Math.max(120, right - left),
+    y: top + node.y * Math.max(150, bottom - top)
+  };
+}
+
+function drawRelayTopology() {
+  const nodes = topologyNodesForScenario();
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+  drawTopologyBackbone(nodes.map(topologyPoint));
+  currentScenarioRoutes().forEach((route, index) => drawTopologyEdge(route, nodeMap, index));
+  nodes.forEach((node) => drawTopologyNode(node, topologyPoint(node)));
+}
+
+function drawTopologyBackbone(points) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([2, 10]);
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    if (index === 0) ctx.moveTo(point.x, point.y);
+    else ctx.lineTo(point.x, point.y);
+  });
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+function drawTopologyEdge(route, nodeMap, index) {
+  const points = route.path
+    .map((id, pathIndex) => nodeMap.get(id) || topologyFallbackNode(route, pathIndex))
+    .filter(Boolean)
+    .map(topologyPoint);
+  if (points.length < 2) return;
+  const metrics = routeWindowMetrics(route);
+  const selected = state.selectedId === route.id || state.hoverId === route.id;
+  const alpha = metrics.availability ? 0.36 + metrics.pulse * 0.42 : 0.13;
+  const width = 2.2 + metrics.flow * 8;
+  ctx.save();
+  drawScreenRoutePath(points, withAlpha(route.color, alpha), metrics.availability ? [] : [8, 10], width, index % 2 ? 0.09 : -0.08);
+  const labelPoint = pointOnRoutePath(points, 0.54, index % 2 ? 0.09 : -0.08);
+  drawTopologyEdgeBadge(route, metrics, labelPoint, selected);
+  const packetCount = Math.max(1, Math.round(1 + metrics.flow * 5));
+  for (let i = 0; i < packetCount; i += 1) {
+    const progress = metrics.availability ? ((state.simDays / Math.max(80, route.cadence * 0.32)) + i / packetCount) % 1 : (0.16 + i * 0.12) % 1;
+    const packet = pointOnRoutePath(points, progress, index % 2 ? 0.09 : -0.08);
+    ctx.beginPath();
+    ctx.arc(packet.x, packet.y, metrics.availability ? 3.4 + metrics.flow * 3 : 2.3, 0, Math.PI * 2);
+    ctx.fillStyle = withAlpha(route.color, metrics.availability ? 0.74 : 0.24);
+    ctx.fill();
+  }
+  state.hitTargets.push({ id: route.id, x: labelPoint.x, y: labelPoint.y, radius: 28 });
+  ctx.restore();
+}
+
+function drawTopologyEdgeBadge(route, metrics, point, selected) {
+  const text = `${metrics.availability ? "open" : "wait"} | ${formatEta(metrics.wait)} | flow ${Math.round(metrics.flow * 100)}%`;
+  ctx.font = selected ? "800 12px Inter, system-ui" : "700 11px Inter, system-ui";
+  const width = Math.min(210, ctx.measureText(text).width + 18);
+  const height = 25;
+  roundedRect(point.x - width / 2, point.y - height / 2, width, height, 6);
+  ctx.fillStyle = selected ? "rgba(18, 28, 36, 0.94)" : "rgba(8, 12, 17, 0.78)";
+  ctx.strokeStyle = metrics.availability ? "rgba(134, 240, 189, 0.52)" : "rgba(255, 208, 111, 0.34)";
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#eaf4ff";
+  ctx.fillText(text, point.x - width / 2 + 9, point.y + 4);
+}
+
+function topologyFallbackNode(route, index) {
+  const routeIndex = currentScenarioRoutes().findIndex((item) => item.id === route.id);
+  return {
+    id: `${route.id}-${index}`,
+    x: Math.min(0.92, 0.16 + index * 0.22),
+    y: 0.28 + routeIndex * 0.18 + Math.sin(index + route.phaseOffset) * 0.06,
+    color: route.color
+  };
+}
+
+function drawTopologyNode(node, point) {
+  const selected = state.selectedId === node.id || state.hoverId === node.id;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, selected ? 18 : 15, 0, Math.PI * 2);
+  ctx.fillStyle = `${node.color}2e`;
+  ctx.fill();
+  ctx.strokeStyle = roleStrokeStyle(node.role);
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, 6.5, 0, Math.PI * 2);
+  ctx.fillStyle = node.color;
+  ctx.shadowColor = node.color;
+  ctx.shadowBlur = 14;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  drawLabel(node.name, point, node.color, selected, node.role);
+  state.hitTargets.push({ id: node.id, x: point.x, y: point.y, radius: 24 });
+  ctx.restore();
+}
+
+function roleStrokeStyle(role) {
+  if (role.includes("gateway")) return "rgba(198, 167, 255, 0.78)";
+  if (role.includes("relay")) return "rgba(143, 212, 255, 0.72)";
+  if (role.includes("storage")) return "rgba(255, 145, 187, 0.72)";
+  if (role.includes("depot")) return "rgba(144, 240, 198, 0.72)";
+  if (role.includes("source")) return "rgba(255, 208, 111, 0.72)";
+  if (role.includes("handoff")) return "rgba(255, 169, 111, 0.72)";
+  return "rgba(255,255,255,0.42)";
 }
 
 function conceptFallbackPoint(route, index) {
@@ -2248,7 +2781,7 @@ function drawManifoldPath(points, color, width, dash = [9, 10]) {
   ctx.setLineDash([]);
 }
 
-function drawConceptNode(item, x, y, hint) {
+function drawConceptNode(item, x, y, hint, showLabel = true) {
   const selected = state.selectedId === item.id || state.hoverId === item.id;
   ctx.beginPath();
   ctx.arc(x, y, selected ? 18 : 14, 0, Math.PI * 2);
@@ -2261,7 +2794,7 @@ function drawConceptNode(item, x, y, hint) {
   ctx.shadowBlur = 15;
   ctx.fill();
   ctx.shadowBlur = 0;
-  drawLabel(item.name, { x, y }, item.color, selected, hint);
+  if (showLabel) drawLabel(item.name, { x, y }, item.color, selected, hint);
   state.hitTargets.push({ id: item.id, x, y, radius: 22 });
 }
 
@@ -2344,6 +2877,10 @@ function currentViewContract() {
 }
 
 function describeObject(id) {
+  if (state.viewMode === "gravity") {
+    const terrainNode = currentScenario().terrain.nodes.find((item) => item.id === id);
+    if (terrainNode) return gravityNodeInfo(terrainNode);
+  }
   if (id === "sun") {
     return objectInfo({
       id,
@@ -2387,6 +2924,78 @@ function describeObject(id) {
   const route = routeClasses.find((item) => item.id === id);
   if (route) return objectInfo(route, "conceptual route class");
   return null;
+}
+
+function gravityNodeInfo(node) {
+  const terrain = currentScenario().terrain;
+  const dynamicNode = dynamicGravityNode(node);
+  const primitives = dynamicGravityPrimitives();
+  const nearestWell = nearestPrimitive(dynamicNode, primitives.wells);
+  const nearestSaddle = nearestPrimitive(dynamicNode, primitives.saddles);
+  const nearestShelf = nearestPrimitive(dynamicNode, primitives.shelves);
+  const fixedDepth = fixedWellDepthFor(node.id);
+  const nearWellProxy = nearestWell ? Math.min(1, nearestWell.mass / Math.max(0.2, distance2d(dynamicNode, nearestWell) + nearestWell.soft)) : 0;
+  const wellDepthProxy = fixedDepth ? nearWellProxy : null;
+  const escapeEnergyProxy = Math.min(1, Math.abs(dynamicNode.z) * 0.72 + nearWellProxy * 0.18);
+  const shelfHeightProxy = nearestShelf ? Math.max(0.05, 1 - Math.min(1, distance2d(dynamicNode, nearestShelf) * 2.2)) * (0.45 + nearestShelf.lift) : Math.max(0.04, 1 + dynamicNode.z) * 0.32;
+  const saddleThresholdProxy = nearestSaddle ? Math.max(0.08, 1 - Math.min(1, distance2d(dynamicNode, nearestSaddle) * 2.4)) * (0.50 + nearestSaddle.lift) : 0.12;
+  const solarSlopeProxy = Math.min(1, Math.hypot(terrain.slope?.x || 0, terrain.slope?.y || 0) * 3.2);
+  return {
+    id: node.id,
+    name: node.name,
+    lead: `${node.role}. Scenario-normalized proxy terrain; not mission-grade delta-v.`,
+    articleId: "gravity-view",
+    details: [
+      ["Model class", "Conceptual energy terrain"],
+      ["Scenario", currentScenario().name],
+      ["Terrain role", node.role],
+      ["Fixed well depth", fixedDepth ? formatWellDepth(fixedDepth.value) : "--"],
+      ["Well-depth unit", fixedDepth ? fixedDepth.basis : "Only massive body wells get fixed EEU values"],
+      ["Mass model", fixedDepth ? "Massive body well source" : masslessGravityRoleFor(node)],
+      ["wellDepthProxy", wellDepthProxy === null ? "not applicable; massless marker" : `${Math.round(wellDepthProxy * 100)}% normalized proxy`],
+      ["escapeEnergyProxy", `${Math.round(escapeEnergyProxy * 100)}% normalized proxy`],
+      ["shelfHeightProxy", `${Math.round(shelfHeightProxy * 100)}% normalized proxy`],
+      ["saddleThresholdProxy", `${Math.round(saddleThresholdProxy * 100)}% normalized proxy`],
+      ["solarSlopeProxy", `${Math.round(solarSlopeProxy * 100)}% normalized proxy`],
+      ["routeEnergyClass", routeEnergyClassFor(node)],
+      ["Model limit", "Proxy values are hand-normalized teaching values, not solved potential fields, CR3BP, delta-v, or mission optimization."]
+    ]
+  };
+}
+
+function masslessGravityRoleFor(node) {
+  if (node.id === "leo-port") return "Massless orbital state marker; contributes no gravity well";
+  if (node.role.includes("saddle") || node.role.includes("pass")) return "Massless pass / saddle marker; contributes no gravity well";
+  if (node.role.includes("shelf")) return "Massless staging shelf marker; contributes no gravity well";
+  return "Massless concept marker; contributes no gravity well";
+}
+
+function fixedWellDepthFor(id) {
+  return gravityWellDepthUnits[id] || null;
+}
+
+function formatWellDepth(value) {
+  if (value < 0.01) return `${value.toFixed(3)} EEU`;
+  return `${value.toFixed(2)} EEU`;
+}
+
+function nearestPrimitive(node, primitives) {
+  if (!primitives?.length) return null;
+  return primitives.reduce((best, primitive) => {
+    if (!best) return primitive;
+    return distance2d(node, primitive) < distance2d(node, best) ? primitive : best;
+  }, null);
+}
+
+function distance2d(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function routeEnergyClassFor(node) {
+  if (node.role.includes("well")) return "well climb";
+  if (node.role.includes("saddle") || node.role.includes("pass")) return "saddle / pass";
+  if (node.role.includes("shelf")) return "staging shelf";
+  return "terrain handoff";
 }
 
 function dynamicRouteInfo(route) {
@@ -2446,7 +3055,8 @@ function objectInfo(item, phase, nextEvent = "--", eta = "--", modelNoteText = "
 
 function modelLimitFor(modelClass) {
   if (modelClass.includes("Keplerian")) return `Epoch ${modelEpochLabel}; ${modelTimeSpan}`;
-  if (modelClass.includes("Lagrange") || modelClass.includes("Local")) return "Distances and local layouts are exaggerated for readability.";
+  if (modelClass.includes("Lagrange")) return "Distances and local layouts are exaggerated for readability.";
+  if (modelClass.includes("Local")) return "Local distances are exaggerated; LEO phase advances faster than the Moon as a schematic orbital cue.";
   if (modelClass.includes("Route")) return "Route class only; not an optimized transfer.";
   if (modelClass.includes("Educational")) return "Shown to explain an energy regime, not as infrastructure.";
   return "Conceptual visualization; not mission software.";
@@ -2650,7 +3260,7 @@ function currentReviewContext() {
   const targetId = state.reviewTargetId || state.selectedId;
   const info = targetId ? describeObject(targetId) : null;
   return {
-    version: "Demo 0.2.6",
+    version: demoVersion,
     url: window.location.href,
     scenarioId: state.scenarioId,
     scenarioName: currentScenario().name,
@@ -2717,7 +3327,7 @@ function tick(now) {
   const elapsed = Math.min(80, now - lastFrame);
   lastFrame = now;
   updateCameraTransition(now);
-  if (!state.paused && state.viewMode !== "gravity") {
+  if (!state.paused) {
     state.simDays += (elapsed / 1000) * state.speed * 0.08;
   }
   draw();
@@ -2767,6 +3377,7 @@ function setScenario(id) {
   if (!scenarios[id]) return;
   state.scenarioId = id;
   const scenario = currentScenario();
+  applyScenarioLayerPreset();
   scenarioButtons.forEach((button) => button.classList.toggle("active", button.dataset.scenarioId === id));
   if (state.scaleMode !== scenario.focusMode) {
     state.scaleMode = scenario.focusMode;
