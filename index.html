@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Solar Infrastructure Viewer</title>
+    <title>Solar Infrastructure Viewer - Demo 0.2.6</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
@@ -11,7 +11,7 @@
       <section class="viewer" aria-label="Solar network visualization">
         <canvas id="solarCanvas"></canvas>
         <div class="hud top-left">
-          <div class="kicker">Demo 0.2.5</div>
+          <div class="kicker">Demo 0.2.6</div>
           <h1 data-i18n="appTitle">Solar Infrastructure Viewer</h1>
           <div class="date-row">
             <span id="simDate">--</span>
@@ -26,6 +26,21 @@
             <div><span data-i18n="scaleLabel">Scale</span><strong id="scaleBadge">AU positions</strong></div>
             <div><span data-i18n="routesLabel">Routes</span><strong id="routeBadge">Atlas overlay</strong></div>
           </div>
+        </div>
+
+        <div class="hud scenario-switcher" aria-label="Scenario">
+          <button class="scenario-button active" data-scenario-id="earth-moon" type="button">
+            <span>Earth-Moon</span>
+            <strong>Gateway Logistics</strong>
+          </button>
+          <button class="scenario-button" data-scenario-id="earth-mars" type="button">
+            <span>Earth-Mars</span>
+            <strong>Service Corridor</strong>
+          </button>
+          <button class="scenario-button" data-scenario-id="lagrange-volatile" type="button">
+            <span>Lagrange Relay</span>
+            <strong>Volatile Network</strong>
+          </button>
         </div>
 
         <div class="hud mode-switcher" aria-label="View mode">

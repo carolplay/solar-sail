@@ -7,7 +7,7 @@ const root = resolve(import.meta.dirname, "..", "dist");
 const projectRoot = resolve(import.meta.dirname, "..");
 const recordsRoot = resolve(projectRoot, "operations");
 const screenshotRoot = resolve(recordsRoot, "review-snapshots");
-const port = Number(process.env.PORT || 4173);
+const requestedPort = readPort();
 const host = process.env.HOST || "127.0.0.1";
 const types = {
   ".html": "text/html; charset=utf-8",
@@ -16,6 +16,17 @@ const types = {
   ".json": "application/json; charset=utf-8"
 };
 const maxJsonBytes = 4_500_000;
+
+function readPort() {
+  const portArgIndex = process.argv.findIndex((arg) => arg === "--port" || arg === "-p");
+  const portValue = portArgIndex >= 0 ? process.argv[portArgIndex + 1] : process.env.PORT;
+  const port = Number(portValue || 4173);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    console.error(`Invalid preview port: ${portValue}`);
+    process.exit(1);
+  }
+  return port;
+}
 
 async function readJsonBody(req) {
   let body = "";
@@ -81,7 +92,7 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  const requestPath = normalize(decodeURIComponent(new URL(req.url, `http://localhost:${port}`).pathname));
+  const requestPath = normalize(decodeURIComponent(new URL(req.url, `http://localhost:${server.address().port}`).pathname));
   const safePath = requestPath === "/" ? "/index.html" : requestPath;
   const filePath = resolve(join(root, safePath));
 
@@ -102,6 +113,21 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(port, host, () => {
-  console.log(`Preview running at http://${host}:${port}`);
-});
+function listen(port) {
+  server.once("error", (error) => {
+    if (error.code === "EADDRINUSE" && port < 65535) {
+      console.warn(`Port ${port} is in use; trying ${port + 1}.`);
+      server.removeAllListeners("listening");
+      listen(port + 1);
+      return;
+    }
+    throw error;
+  });
+  server.once("listening", () => {
+    const actualPort = server.address().port;
+    console.log(`Preview running at http://${host}:${actualPort}`);
+  });
+  server.listen(port, host);
+}
+
+listen(requestedPort);

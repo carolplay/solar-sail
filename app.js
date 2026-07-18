@@ -24,6 +24,7 @@ const articleClose = document.getElementById("articleClose");
 const speedButtons = Array.from(document.querySelectorAll(".speed-button"));
 const modeButtons = Array.from(document.querySelectorAll(".mode-button"));
 const scaleButtons = Array.from(document.querySelectorAll(".scale-button"));
+const scenarioButtons = Array.from(document.querySelectorAll(".scenario-button"));
 const languageButtons = Array.from(document.querySelectorAll(".language-button"));
 const layerToggles = Array.from(document.querySelectorAll("[data-layer]"));
 const sheetButtons = Array.from(document.querySelectorAll("[data-sheet-state]"));
@@ -68,6 +69,7 @@ const state = {
     labels: true
   },
   activeArticleId: "orbit-view",
+  scenarioId: "earth-moon",
   viewMode: "orbit",
   scaleMode: "solar",
   selectedId: null,
@@ -235,20 +237,337 @@ const viewModels = {
     routes: "Typed atlas overlay"
   },
   gravity: {
-    label: "Conceptual / research placeholder",
-    note: "Pseudo-3D teaching surface; not a computed delta-v or potential-energy model.",
-    frame: "Concept diagram",
-    scale: "Energy metaphor",
-    routes: "No route geometry"
+    label: "Conceptual contour terrain",
+    note: "Scenario-normalized relative energy terrain; not a solved gravitational potential field.",
+    frame: "Scenario energy lens",
+    scale: "Normalized terrain",
+    routes: "Terrain primitives"
   },
   manifold: {
-    label: "Conceptual / research placeholder",
-    note: "Manifold-inspired route sketch; CR3BP tubes are not numerically solved.",
-    frame: "Concept diagram",
-    scale: "Not spatial scale",
-    routes: "Teaching sketch"
+    label: "Heuristic route-window model",
+    note: "Route families are conceptual; availability and flow are dynamic.",
+    frame: "Scenario route lens",
+    scale: "Cadence / wait",
+    routes: "Dynamic availability"
   }
 };
+
+const scenarios = {
+  "earth-moon": {
+    id: "earth-moon",
+    name: "Earth-Moon Gateway Logistics",
+    problem: "How does gateway placement reduce surface and orbital logistics friction?",
+    focusMode: "earth",
+    recommendedView: "orbit",
+    defaultInspectId: "earth-moon-cargo-ladder",
+    demand: 0.72,
+    urgency: 0.62,
+    offset: 18,
+    emphasis: {
+      nodes: new Set(["earth", "leo-port", "moon", "earth-moon-l1", "sun-earth-l1", "sun-earth-l2"]),
+      routes: new Set(["earth-moon-cargo-ladder", "leo-l1-shuttle", "lunar-surface-hop"])
+    },
+    terrain: {
+      title: "Earth-Moon Gateway Terrain",
+      subtitle: "Earth well, LEO shelf, Moon well, and Earth-Moon L1/L2 saddle are normalized for logistics explanation.",
+      legend: ["Wells: Earth and Moon are local energy basins", "Shelves: LEO and gateway staging reduce route friction", "Saddles: L1/L2 act like passes, not gravity wells"],
+      nodes: [
+        { id: "earth", name: "Earth Well", x: -0.72, y: 0.00, z: -1.46, color: "#78bfff", role: "deep well" },
+        { id: "leo-port", name: "LEO Shelf", x: -0.50, y: -0.18, z: -0.84, color: "#90f0c6", role: "exit shelf" },
+        { id: "earth-moon-l1", name: "Earth-Moon L1/L2", x: -0.08, y: 0.08, z: -0.22, color: "#c6a7ff", role: "saddle pass" },
+        { id: "moon", name: "Moon Well", x: 0.34, y: 0.22, z: -0.66, color: "#d7dce3", role: "secondary well" }
+      ],
+      wells: [
+        { x: -0.72, y: 0.00, mass: 1.45, soft: 0.12 },
+        { x: 0.34, y: 0.22, mass: 0.45, soft: 0.10 }
+      ],
+      saddles: [
+        { x: -0.08, y: 0.08, lift: 0.24, width: 4.8 },
+        { x: 0.08, y: 0.28, lift: 0.14, width: 5.6 }
+      ],
+      shelves: [{ x: -0.50, y: -0.18, lift: 0.10, width: 4.0 }],
+      slope: { x: 0.02, y: -0.01 }
+    }
+  },
+  "earth-mars": {
+    id: "earth-mars",
+    name: "Earth-Mars Service Corridor",
+    problem: "How do scheduled windows and cycler-like service change Mars access?",
+    focusMode: "inner",
+    recommendedView: "orbit",
+    defaultInspectId: "earth-mars-cycler-service",
+    demand: 0.82,
+    urgency: 0.86,
+    offset: 120,
+    emphasis: {
+      nodes: new Set(["earth", "mars", "leo-port", "cycler", "mars-cycler-point", "phobos-port", "deimos-port"]),
+      routes: new Set(["earth-mars-cycler-service", "earth-mars-fast-window", "mars-terminal-taxi", "cycler-line", "earth-mars-fast"])
+    },
+    terrain: {
+      title: "Earth-Mars Service Terrain",
+      subtitle: "A heliocentric background slope frames scheduled windows without drawing the Sun as a dominant well.",
+      legend: ["Slope: heliocentric transfer terrain is compressed", "Shelves: ports and cycler intercepts absorb taxi burden", "Saddles: service windows are timing passes, not solved trajectories"],
+      nodes: [
+        { id: "earth", name: "Earth Port Shelf", x: -0.76, y: -0.10, z: -0.72, color: "#78bfff", role: "origin well" },
+        { id: "cycler", name: "Cycler Service", x: -0.10, y: 0.10, z: -0.20, color: "#ffd06f", role: "schedule shelf" },
+        { id: "mars-cycler-point", name: "Mars Intercept", x: 0.42, y: -0.18, z: -0.30, color: "#ffd06f", role: "taxi pass" },
+        { id: "phobos-port", name: "Phobos Port", x: 0.74, y: 0.12, z: -0.52, color: "#9ff1c7", role: "arrival shelf" },
+        { id: "mars", name: "Mars Well", x: 0.90, y: 0.00, z: -0.82, color: "#e9785f", role: "destination well" }
+      ],
+      wells: [
+        { x: -0.76, y: -0.10, mass: 0.75, soft: 0.15 },
+        { x: 0.90, y: 0.00, mass: 0.72, soft: 0.16 }
+      ],
+      saddles: [
+        { x: -0.10, y: 0.10, lift: 0.16, width: 4.0 },
+        { x: 0.42, y: -0.18, lift: 0.14, width: 4.5 }
+      ],
+      shelves: [{ x: 0.74, y: 0.12, lift: 0.11, width: 4.0 }],
+      slope: { x: 0.18, y: -0.05 }
+    }
+  },
+  "lagrange-volatile": {
+    id: "lagrange-volatile",
+    name: "Lagrange Relay And Volatile Network",
+    problem: "How do relay, storage, and slow-cargo corridors make non-planet nodes valuable?",
+    focusMode: "solar",
+    recommendedView: "manifold",
+    defaultInspectId: "volatile-belt-drift",
+    demand: 0.66,
+    urgency: 0.38,
+    offset: 260,
+    emphasis: {
+      nodes: new Set(["earth", "mars", "ceres", "vesta", "earth-l4", "earth-l5", "sun-earth-l1", "sun-earth-l2", "earth-moon-l1", "deimos-port", "ceres-drift-hub"]),
+      routes: new Set(["volatile-belt-drift", "lagrange-relay-chain", "mars-ceres-cargo-handoff", "earth-ceres-low", "mars-ceres-planned"])
+    },
+    terrain: {
+      title: "Lagrange Relay And Volatile Terrain",
+      subtitle: "Solar background slope, relay shelves, and saddle passes dominate the slow-cargo route theater.",
+      legend: ["Slope: solar energy gradient is an offstage background", "Shelves: relay and storage nodes hold cargo between windows", "Saddles: Lagrange regions support handoffs, not free wells"],
+      nodes: [
+        { id: "sun-earth-l1", name: "Sun-Earth L1/L2", x: -0.88, y: -0.20, z: -0.16, color: "#ffa96f", role: "relay saddle" },
+        { id: "earth-l4", name: "L4/L5 Storage", x: -0.52, y: 0.30, z: -0.12, color: "#ff91bb", role: "storage shelf" },
+        { id: "earth-moon-l1", name: "EM L1/L2", x: -0.22, y: -0.02, z: -0.10, color: "#c6a7ff", role: "handoff pass" },
+        { id: "deimos-port", name: "Mars Gateway", x: 0.42, y: 0.12, z: -0.22, color: "#b8f3dd", role: "relay shelf" },
+        { id: "ceres", name: "Ceres Volatiles", x: 0.94, y: -0.08, z: -0.44, color: "#c5cbd4", role: "bulk cargo well" }
+      ],
+      wells: [
+        { x: 0.94, y: -0.08, mass: 0.45, soft: 0.18 },
+        { x: 0.42, y: 0.12, mass: 0.28, soft: 0.18 }
+      ],
+      saddles: [
+        { x: -0.88, y: -0.20, lift: 0.18, width: 4.2 },
+        { x: -0.22, y: -0.02, lift: 0.15, width: 4.0 }
+      ],
+      shelves: [
+        { x: -0.52, y: 0.30, lift: 0.12, width: 3.4 },
+        { x: 0.42, y: 0.12, lift: 0.10, width: 3.8 }
+      ],
+      slope: { x: 0.28, y: -0.09 }
+    }
+  }
+};
+
+const dynamicRouteFamilies = [
+  {
+    id: "earth-moon-cargo-ladder",
+    scenarioId: "earth-moon",
+    name: "LEO - EM L1 - Lunar Cargo Ladder",
+    type: "Low-Energy Transfer",
+    claim: "conceptual-corridor",
+    geometry: "stable route family",
+    role: "Slow cargo ladder that waits for Earth-Moon gateway alignment and depot support.",
+    from: "leo-port",
+    to: "moon",
+    path: ["leo-port", "earth-moon-l1", "moon"],
+    color: "#8da7ff",
+    travelClass: "weeks",
+    cadence: 27.3,
+    dutyCycle: 0.34,
+    phaseOffset: 4,
+    reliability: 0.84,
+    capacity: 0.72,
+    suitability: 0.78,
+    payload: "bulk cargo",
+    waitUnit: "lunar cadence"
+  },
+  {
+    id: "leo-l1-shuttle",
+    scenarioId: "earth-moon",
+    name: "LEO Gateway Shuttle Frequency",
+    type: "Shuttle Transfer",
+    claim: "service-schedule",
+    geometry: "local timing band",
+    role: "Frequent local gateway service with moderate waiting cost.",
+    from: "leo-port",
+    to: "earth-moon-l1",
+    path: ["leo-port", "earth-moon-l1"],
+    color: "#90f0c6",
+    travelClass: "days",
+    cadence: 9,
+    dutyCycle: 0.52,
+    phaseOffset: 1,
+    reliability: 0.90,
+    capacity: 0.58,
+    suitability: 0.82,
+    payload: "crew and priority cargo",
+    waitUnit: "local shuttle"
+  },
+  {
+    id: "lunar-surface-hop",
+    scenarioId: "earth-moon",
+    name: "Gateway - Lunar Surface Hop",
+    type: "Shuttle Transfer",
+    claim: "service-schedule",
+    geometry: "surface access marker",
+    role: "Short local hop that exposes surface access friction.",
+    from: "earth-moon-l1",
+    to: "moon",
+    path: ["earth-moon-l1", "moon"],
+    color: "#d7dce3",
+    travelClass: "days",
+    cadence: 6,
+    dutyCycle: 0.46,
+    phaseOffset: 3,
+    reliability: 0.88,
+    capacity: 0.48,
+    suitability: 0.74,
+    payload: "surface logistics",
+    waitUnit: "surface shuttle"
+  },
+  {
+    id: "earth-mars-cycler-service",
+    scenarioId: "earth-mars",
+    name: "Cycler Service Window",
+    type: "Cycler Line",
+    claim: "service-schedule",
+    geometry: "scheduled service family",
+    role: "Aldrin-cycler-inspired service with high capacity but strict taxi timing.",
+    from: "earth",
+    to: "mars-cycler-point",
+    path: ["leo-port", "cycler", "mars-cycler-point"],
+    color: "#ffd06f",
+    travelClass: "months",
+    cadence: 780,
+    dutyCycle: 0.12,
+    phaseOffset: 40,
+    reliability: 0.76,
+    capacity: 0.92,
+    suitability: 0.70,
+    payload: "passengers",
+    waitUnit: "cycler cycle"
+  },
+  {
+    id: "earth-mars-fast-window",
+    scenarioId: "earth-mars",
+    name: "Fast Earth-Mars Window",
+    type: "Fast Transfer",
+    claim: "transfer-class",
+    geometry: "transfer class window",
+    role: "Higher-energy window for urgent crew or priority cargo.",
+    from: "earth",
+    to: "mars",
+    path: ["earth", "mars"],
+    color: "#8fd4ff",
+    travelClass: "months",
+    cadence: 780,
+    dutyCycle: 0.20,
+    phaseOffset: 120,
+    reliability: 0.68,
+    capacity: 0.42,
+    suitability: 0.88,
+    payload: "urgent crew",
+    waitUnit: "synodic window"
+  },
+  {
+    id: "mars-terminal-taxi",
+    scenarioId: "earth-mars",
+    name: "Mars Terminal Taxi",
+    type: "Shuttle Transfer",
+    claim: "service-schedule",
+    geometry: "taxi timing marker",
+    role: "Mars-system taxi burden between intercepts and Phobos or Deimos ports.",
+    from: "mars-cycler-point",
+    to: "phobos-port",
+    path: ["mars-cycler-point", "phobos-port", "deimos-port"],
+    color: "#9ff1c7",
+    travelClass: "days",
+    cadence: 16,
+    dutyCycle: 0.40,
+    phaseOffset: 6,
+    reliability: 0.82,
+    capacity: 0.50,
+    suitability: 0.76,
+    payload: "terminal transfer",
+    waitUnit: "taxi interval"
+  },
+  {
+    id: "lagrange-relay-chain",
+    scenarioId: "lagrange-volatile",
+    name: "Sun-Earth Relay Chain",
+    type: "Low-Energy Transfer",
+    claim: "conceptual-corridor",
+    geometry: "relay route family",
+    role: "Stable relay and storage handoff through Sun-Earth and Earth-Moon Lagrange regions.",
+    from: "sun-earth-l1",
+    to: "earth-l5",
+    path: ["sun-earth-l1", "earth-moon-l1", "earth-l5"],
+    color: "#ff91bb",
+    travelClass: "months",
+    cadence: 180,
+    dutyCycle: 0.38,
+    phaseOffset: 30,
+    reliability: 0.80,
+    capacity: 0.64,
+    suitability: 0.72,
+    payload: "relay cargo",
+    waitUnit: "relay cadence"
+  },
+  {
+    id: "volatile-belt-drift",
+    scenarioId: "lagrange-volatile",
+    name: "Volatile Belt Drift",
+    type: "Low-Energy Transfer",
+    claim: "conceptual-corridor",
+    geometry: "slow cargo route family",
+    role: "Slow bulk cargo corridor connecting relay storage to Ceres volatile supply.",
+    from: "earth-l5",
+    to: "ceres",
+    path: ["earth-l5", "deimos-port", "ceres-drift-hub", "ceres"],
+    color: "#8da7ff",
+    travelClass: "years",
+    cadence: 420,
+    dutyCycle: 0.46,
+    phaseOffset: 210,
+    reliability: 0.70,
+    capacity: 0.88,
+    suitability: 0.82,
+    payload: "bulk volatiles",
+    waitUnit: "slow cargo window"
+  },
+  {
+    id: "mars-ceres-cargo-handoff",
+    scenarioId: "lagrange-volatile",
+    name: "Mars-Ceres Cargo Handoff",
+    type: "Planned Route",
+    claim: "planned-relationship",
+    geometry: "handoff planning band",
+    role: "Cargo handoff between Mars gateways and belt storage nodes.",
+    from: "deimos-port",
+    to: "ceres",
+    path: ["deimos-port", "ceres-drift-hub", "ceres"],
+    color: "#b8f3dd",
+    travelClass: "months-years",
+    cadence: 260,
+    dutyCycle: 0.32,
+    phaseOffset: 74,
+    reliability: 0.66,
+    capacity: 0.74,
+    suitability: 0.68,
+    payload: "depot cargo",
+    waitUnit: "handoff window"
+  }
+];
 
 const scaleModes = {
   solar: {
@@ -698,17 +1017,17 @@ const explanationEntries = {
   },
   "gravity-view": {
     title: "Gravity Well View",
-    definition: "Gravity Well View is a conceptual terrain view of energy cost.",
-    matters: "It explains why leaving Earth is different from crossing empty distance, and why shelves, saddles, and gateways matter for logistics.",
-    models: "The current view models the idea of wells, saddles, and local gateway shelves.",
-    simplifies: "It does not compute true delta-v, patched conics, or a mission-grade potential surface."
+    definition: "Gravity View is a scenario-normalized conceptual terrain view of relative energy cost.",
+    matters: "It explains why wells, shelves, saddles, passes, and background slopes shape gateway logistics.",
+    models: "Demo 0.2.6 uses parameterized primitives for wells, shelves, saddle passes, and solar background slopes.",
+    simplifies: "It is not a solved gravitational potential field, not CR3BP, and not a mission-grade delta-v surface."
   },
   "low-energy-routes-view": {
     title: "Low-Energy Routes View",
-    definition: "Low-Energy Routes View sketches slow corridors inspired by invariant manifolds and the Interplanetary Transport Network.",
-    matters: "It gives the Age of Sail equivalent of currents: useful routes that trade time for lower energy.",
-    models: "The demo shows halo-like loops, saddle gateways, and tube-like route families.",
-    simplifies: "It does not solve the circular restricted three-body problem or generate real stable and unstable manifold tubes."
+    definition: "Low-Energy Routes View shows stable conceptual route families with dynamic route windows.",
+    matters: "It exposes the future economic inputs: cadence, waiting, availability, reliability, capacity, and route suitability.",
+    models: "Demo 0.2.6 uses a heuristic route-window model where topology stays stable while availability and flow change over simulation time.",
+    simplifies: "It does not solve invariant manifolds, CR3BP tubes, launch windows, or any real mission trajectory."
   },
   "leo-port": {
     title: "LEO Port",
@@ -771,7 +1090,7 @@ const explanationEntries = {
     definition: "A low-energy transfer uses gravitational structure and time to reduce propulsion needs.",
     matters: "Slow cargo can use these corridors like trade winds, exchanging speed for lower energy cost.",
     models: "The demo shows manifold-inspired corridors as educational route families.",
-    simplifies: "No real invariant manifold is calculated in Demo 2.0."
+    simplifies: "No real invariant manifold is calculated in Demo 0.2.6."
   },
   "launch-window": {
     title: "Launch Window",
@@ -784,7 +1103,7 @@ const explanationEntries = {
     title: "Fuel Depot",
     definition: "A fuel depot stores propellant near useful route junctions.",
     matters: "Depots can turn difficult trips into chained legs and make ports more valuable.",
-    models: "Demo 2.0 treats depots as route-atlas concepts, not simulated inventory.",
+    models: "Demo 0.2.6 treats depots as route-atlas concepts, not simulated inventory.",
     simplifies: "There is no economy, extraction, or propellant flow model yet."
   },
   gateway: {
@@ -1067,6 +1386,7 @@ function drawCurvedRoute(fromId, toId, color, dash = [], bend = -0.18, width = 1
 }
 
 function routeStyle(route, index = 0) {
+  const scenarioBoost = scenarioEmphasisFor(route.id);
   const styles = {
     "transfer-class": { color: "rgba(143, 212, 255, 0.76)", dash: [], width: 1.7, bend: -0.15 - index * 0.025 },
     "conceptual-corridor": { color: "rgba(141, 167, 255, 0.50)", dash: [3, 12], width: 1.2, bend: -0.22 - index * 0.025 },
@@ -1074,7 +1394,64 @@ function routeStyle(route, index = 0) {
     "service-schedule": { color: "rgba(255, 208, 111, 0.46)", dash: [10, 10], width: 1.2, bend: -0.10 - index * 0.02 },
     "science-example": { color: "rgba(255, 159, 111, 0.48)", dash: [5, 8], width: 1, bend: -0.16 }
   };
-  return styles[route.claim] || { color: `${route.color}88`, dash: route.dash || [], width: 1.2, bend: -0.12 - index * 0.025 };
+  const style = styles[route.claim] || { color: `${route.color}88`, dash: route.dash || [], width: 1.2, bend: -0.12 - index * 0.025 };
+  return {
+    ...style,
+    color: withAlpha(style.color, scenarioBoost * alphaFromColor(style.color, 0.68)),
+    width: style.width + (scenarioBoost > 0.95 ? 0.7 : 0)
+  };
+}
+
+function withAlpha(color, alpha) {
+  if (color.startsWith("rgba")) return color.replace(/,\s*[\d.]+\)$/, `, ${Math.max(0.08, Math.min(1, alpha)).toFixed(2)})`);
+  if (color.startsWith("#")) {
+    const hex = color.slice(1);
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${Math.max(0.08, Math.min(1, alpha)).toFixed(2)})`;
+  }
+  return color;
+}
+
+function alphaFromColor(color, fallback) {
+  const match = color.match(/rgba\([^,]+,[^,]+,[^,]+,\s*([\d.]+)\)/);
+  return match ? Number(match[1]) : fallback;
+}
+
+function currentScenario() {
+  return scenarios[state.scenarioId] || scenarios["earth-moon"];
+}
+
+function scenarioEmphasisFor(id) {
+  const scenario = currentScenario();
+  if (scenario.emphasis.nodes.has(id) || scenario.emphasis.routes.has(id)) return 1;
+  if (state.viewMode !== "orbit") return 1;
+  return 0.34;
+}
+
+function currentScenarioRoutes() {
+  return dynamicRouteFamilies.filter((route) => route.scenarioId === state.scenarioId);
+}
+
+function routeWindowMetrics(route, day = state.simDays) {
+  const scenario = scenarios[route.scenarioId] || currentScenario();
+  const phase = ((day + scenario.offset + route.phaseOffset) % route.cadence + route.cadence) % route.cadence;
+  const openDays = route.cadence * route.dutyCycle;
+  const availability = phase <= openDays ? 1 : 0;
+  const edgeSoftness = Math.min(1, Math.min(phase, Math.abs(openDays - phase)) / Math.max(1, openDays * 0.22));
+  const pulse = availability ? 0.55 + edgeSoftness * 0.45 : 0.10 + Math.max(0, 1 - (phase - openDays) / Math.max(1, route.cadence * 0.18)) * 0.18;
+  const wait = availability ? 0 : route.cadence - phase;
+  const flow = scenario.demand * pulse * route.suitability * route.capacity;
+  const waitingCost = wait * scenario.urgency;
+  return {
+    availability,
+    pulse,
+    wait,
+    nextWindow: day + wait,
+    flow,
+    waitingCost
+  };
 }
 
 function claimLabel(claim) {
@@ -1203,6 +1580,8 @@ function roundedRect(x, y, w, h, r) {
 function drawObject(item, worldPos, radius, color, kind = "node", labelHint = "", showLabel = true) {
   const screenPos = worldToScreen(worldPos);
   if (screenPos.x < -80 || screenPos.x > state.width + 80 || screenPos.y < -80 || screenPos.y > state.height + 80) return;
+  ctx.save();
+  ctx.globalAlpha *= scenarioEmphasisFor(item.id);
   const selected = state.selectedId === item.id || state.hoverId === item.id;
   const drawRadius = Math.max(2.8, radius * Math.sqrt(state.zoom));
   ctx.beginPath();
@@ -1232,6 +1611,7 @@ function drawObject(item, worldPos, radius, color, kind = "node", labelHint = ""
   }
 
   if (showLabel) drawLabel(item.name, screenPos, color, selected, labelHint);
+  ctx.restore();
   state.hitTargets.push({ id: item.id, x: screenPos.x, y: screenPos.y, radius: Math.max(14, drawRadius + 8) });
 }
 
@@ -1296,6 +1676,13 @@ function drawOrbitView() {
     });
   }
 
+  if (layerEnabled("lowEnergy")) {
+    currentScenarioRoutes().forEach((route, index) => {
+      const show = route.path.some((id) => visibleInScale(id)) || state.scaleMode === currentScenario().focusMode || state.scaleMode === "solar";
+      if (show) drawDynamicRouteFamily(route, index);
+    });
+  }
+
   drawSun();
   bodies.forEach((body) => {
     if (layerEnabled("planets") && visibleInScale(body.id)) drawObject(body, getBodyWorld(body.id), body.radius, body.color, "body", "", layerEnabled("labels"));
@@ -1323,6 +1710,84 @@ function drawOrbitView() {
     const eta = pos.trip.active ? formatEta(pos.trip.nextArrival - state.simDays) : `T ${formatEta(pos.trip.nextDeparture - state.simDays)}`;
     drawObject(route, pos, pos.parked ? 3.8 : 5.2, route.color, "shuttle", eta, !pos.parked && layerEnabled("labels"));
   });
+}
+
+function drawDynamicRouteFamily(route, index = 0) {
+  const metrics = routeWindowMetrics(route);
+  const style = routeStyle(route, index);
+  const points = route.path.map((id) => worldToScreen(getBodyWorld(id)));
+  if (points.length < 2) return;
+  ctx.save();
+  ctx.globalAlpha = scenarioEmphasisFor(route.id);
+  drawScreenRoutePath(points, withAlpha(route.color, 0.20), [6, 12], 3.6 + index * 0.2, -0.12);
+  const pulseAlpha = 0.18 + metrics.pulse * 0.52;
+  drawScreenRoutePath(points, withAlpha(route.color, pulseAlpha), style.dash?.length ? style.dash : [10, 10], 1.6 + metrics.pulse * 2.2, -0.12);
+  const markerCount = Math.max(1, Math.round(1 + metrics.flow * 3));
+  for (let i = 0; i < markerCount; i += 1) {
+    const progress = ((state.simDays / Math.max(24, route.cadence * 0.42)) + i / markerCount + route.phaseOffset * 0.01) % 1;
+    const p = pointOnRoutePath(points, progress, -0.12);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3.6 + metrics.flow * 2.8, 0, Math.PI * 2);
+    ctx.fillStyle = withAlpha(route.color, 0.52 + metrics.pulse * 0.30);
+    ctx.fill();
+  }
+  const marker = pointOnRoutePath(points, 0.50, -0.12);
+  const selected = state.selectedId === route.id || state.hoverId === route.id;
+  ctx.save();
+  ctx.translate(marker.x, marker.y);
+  ctx.rotate(Math.PI / 4);
+  ctx.fillStyle = selected ? route.color : withAlpha(route.color, 0.72);
+  ctx.strokeStyle = "rgba(5, 7, 11, 0.92)";
+  ctx.lineWidth = 2;
+  ctx.fillRect(-5, -5, 10, 10);
+  ctx.strokeRect(-5, -5, 10, 10);
+  ctx.restore();
+  if ((selected || state.viewMode === "orbit") && layerEnabled("labels")) {
+    drawLabel(route.name, marker, route.color, selected, `Wait ${formatEta(metrics.wait)}`);
+  }
+  state.hitTargets.push({ id: route.id, x: marker.x, y: marker.y, radius: 18 });
+  ctx.restore();
+}
+
+function drawScreenRoutePath(points, color, dash, width, bend = -0.10) {
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    if (index === 0) {
+      ctx.moveTo(point.x, point.y);
+      return;
+    }
+    const previous = points[index - 1];
+    const distance = Math.hypot(point.x - previous.x, point.y - previous.y);
+    const mid = {
+      x: (previous.x + point.x) / 2,
+      y: (previous.y + point.y) / 2 + distance * bend
+    };
+    ctx.quadraticCurveTo(mid.x, mid.y, point.x, point.y);
+  });
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.setLineDash(dash);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function pointOnRoutePath(points, progress, bend = -0.10) {
+  const segments = points.length - 1;
+  const scaled = Math.min(0.999, Math.max(0, progress)) * segments;
+  const index = Math.min(segments - 1, Math.floor(scaled));
+  const tValue = scaled - index;
+  const from = points[index];
+  const to = points[index + 1];
+  const distance = Math.hypot(to.x - from.x, to.y - from.y);
+  const control = {
+    x: (from.x + to.x) / 2,
+    y: (from.y + to.y) / 2 + distance * bend
+  };
+  const inv = 1 - tValue;
+  return {
+    x: inv * inv * from.x + 2 * inv * tValue * control.x + tValue * tValue * to.x,
+    y: inv * inv * from.y + 2 * inv * tValue * control.y + tValue * tValue * to.y
+  };
 }
 
 function drawLocalOrbit(parentId, distance, color) {
@@ -1451,26 +1916,34 @@ function drawGravityView() {
   state.hitTargets = [];
   state.labelBoxes = [];
   drawSpace();
-  drawConceptTitle("Gravity Well View", `Snapshot ${formatDate(state.conceptSnapshotDay)} | topology sketch; wells and saddles share one coordinate frame.`);
+  const scenario = currentScenario();
+  drawConceptTitle(scenario.terrain.title, `${scenario.terrain.subtitle} Not a solved gravitational potential field.`);
   drawPotentialSurface();
-  gravityConceptNodes().forEach((node) => {
+  scenario.terrain.nodes.forEach((node) => {
     const p = projectIso(node.x, node.y, node.z);
     drawConceptNode(node, p.x, p.y, node.role);
   });
-  drawConceptLegend(["Wells are no longer arranged as a straight ladder", "Grid density is higher; contours show shelves and saddle passes", "Still conceptual: not a computed mission energy surface"]);
+  drawConceptLegend(scenario.terrain.legend);
 }
 
 function drawTransferView() {
   state.hitTargets = [];
   state.labelBoxes = [];
   drawSpace();
-  drawConceptTitle("Low-Energy Routes View", `Snapshot ${formatDate(state.conceptSnapshotDay)} | smooth corridor topology; not solved CR3BP tubes.`);
-  drawManifoldTubes();
-  lowEnergyConceptNodes().forEach((node) => {
+  const scenario = currentScenario();
+  drawConceptTitle("Low-Energy Routes View", `${scenario.name} | Heuristic route-window model; route families are stable, availability and flow are dynamic.`);
+  drawScenarioRouteFamiliesConcept();
+  scenario.terrain.nodes.forEach((node) => {
     const p = projectIso(node.x, node.y, node.z);
     drawConceptNode(node, p.x, p.y, node.role);
   });
-  drawConceptLegend(["Corridors are braided and curved, not direct point-to-point links", "Blue paths imply slow gateway handoffs; gold remains fast/cycler infrastructure", "Still conceptual until a real manifold solver exists"]);
+  const active = currentScenarioRoutes()[0];
+  const metrics = active ? routeWindowMetrics(active) : null;
+  drawConceptLegend([
+    "Faint corridors are stable conceptual route families",
+    metrics ? `Current lead route: ${active.name}; wait ${formatEta(metrics.wait)}; flow ${Math.round(metrics.flow * 100)}%` : "Availability uses heuristic cadence and duty cycle",
+    "Not CR3BP, not real manifolds, and not mission-planning telemetry"
+  ]);
 }
 
 function drawConceptTitle(title, subtitle) {
@@ -1533,16 +2006,21 @@ function lowEnergyConceptNodes() {
 }
 
 function effectivePotential(x, y) {
-  const wells = gravityWellAnchors();
-  const centrifugal = 0.13 * (x * x + y * y);
+  const terrain = currentScenario().terrain;
+  const wells = terrain.wells;
+  const slope = terrain.slope || { x: 0, y: 0 };
+  const centrifugal = 0.09 * (x * x + y * y) + x * slope.x + y * slope.y;
   const pull = wells.reduce((sum, well) => {
     const d = Math.hypot(x - well.x, y - well.y) + well.soft;
     return sum - well.mass / d;
   }, 0);
-  const earthMoonSaddle = 0.16 * Math.exp(-Math.hypot(x + 0.12, y - 0.22) * 4.8);
-  const solarSaddle = 0.13 * Math.exp(-Math.hypot(x + 0.68, y + 0.12) * 4.4);
-  const marsShelf = 0.08 * Math.exp(-Math.hypot(x - 0.75, y + 0.18) * 4.2);
-  return Math.max(-1.70, Math.min(0.62, pull * 0.27 + centrifugal + earthMoonSaddle + solarSaddle + marsShelf));
+  const saddleLift = terrain.saddles.reduce((sum, saddle) => {
+    return sum + saddle.lift * Math.exp(-Math.hypot(x - saddle.x, y - saddle.y) * saddle.width);
+  }, 0);
+  const shelfLift = terrain.shelves.reduce((sum, shelf) => {
+    return sum + shelf.lift * Math.exp(-Math.hypot(x - shelf.x, y - shelf.y) * shelf.width);
+  }, 0);
+  return Math.max(-1.70, Math.min(0.62, pull * 0.31 + centrifugal + saddleLift + shelfLift));
 }
 
 function drawPotentialSurface() {
@@ -1612,6 +2090,91 @@ function drawContour(level, color) {
     ctx.stroke();
   }
   ctx.setLineDash([]);
+}
+
+function drawScenarioRouteFamiliesConcept() {
+  const terrainNodes = new Map(currentScenario().terrain.nodes.map((node) => [node.id, node]));
+  currentScenario().terrain.saddles.forEach((saddle, index) => {
+    drawHaloLoop(saddle.x, saddle.y, index % 2 ? "#c6a7ff" : "#ffa96f");
+  });
+  currentScenarioRoutes().forEach((route, index) => {
+    const metrics = routeWindowMetrics(route);
+    const points = route.path
+      .map((id, pathIndex) => terrainNodes.get(id) || conceptFallbackPoint(route, pathIndex))
+      .filter(Boolean)
+      .map((node) => [node.x, node.y, node.z + 0.04]);
+    if (points.length < 2) return;
+    drawDynamicConceptPath(points, route.color, 8 + index * 2, metrics);
+    const marker = conceptPointOnPath(points, 0.56);
+    if (state.selectedId === route.id || state.hoverId === route.id) {
+      drawLabel(route.name, marker, route.color, true, `Wait ${formatEta(metrics.wait)}`);
+    }
+    state.hitTargets.push({ id: route.id, x: marker.x, y: marker.y, radius: 24 });
+  });
+}
+
+function conceptFallbackPoint(route, index) {
+  const routeIndex = currentScenarioRoutes().findIndex((item) => item.id === route.id);
+  const spread = currentScenarioRoutes().length > 1 ? routeIndex / (currentScenarioRoutes().length - 1) : 0.5;
+  return {
+    x: -0.88 + index * 0.44,
+    y: -0.34 + spread * 0.72 + Math.sin(index + route.phaseOffset) * 0.08,
+    z: -0.08 + index * 0.03
+  };
+}
+
+function drawDynamicConceptPath(points, color, width, metrics) {
+  for (let offset = -2; offset <= 2; offset += 1) {
+    const projected = points.map((point, index) => {
+      const wave = Math.sin(index * 1.7 + offset + state.simDays * 0.018) * 0.018;
+      return projectIso(point[0], point[1] + offset * 0.024 + wave, point[2] + Math.abs(offset) * 0.022);
+    });
+    ctx.beginPath();
+    projected.forEach((point, index) => {
+      if (index === 0) {
+        ctx.moveTo(point.x, point.y);
+      } else if (index < projected.length - 1) {
+        const next = projected[index + 1];
+        ctx.quadraticCurveTo(point.x, point.y, (point.x + next.x) / 2, (point.y + next.y) / 2);
+      } else {
+        ctx.lineTo(point.x, point.y);
+      }
+    });
+    ctx.strokeStyle = offset === 0 ? withAlpha(color, 0.24 + metrics.pulse * 0.50) : withAlpha(color, 0.12);
+    ctx.lineWidth = offset === 0 ? width * 0.24 : width * 0.10;
+    ctx.setLineDash(offset === 0 ? [9, 10] : [3, 13]);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  const packets = Math.max(1, Math.round(1 + metrics.flow * 4));
+  for (let i = 0; i < packets; i += 1) {
+    const progress = ((state.simDays / 180) + i / packets) % 1;
+    const packet = conceptPointOnPath(points, progress);
+    ctx.beginPath();
+    ctx.arc(packet.x, packet.y, 4 + metrics.flow * 3, 0, Math.PI * 2);
+    ctx.fillStyle = withAlpha(color, 0.42 + metrics.pulse * 0.32);
+    ctx.fill();
+  }
+}
+
+function conceptPointOnPath(points, progress) {
+  const segments = points.length - 1;
+  const scaled = Math.min(0.999, Math.max(0, progress)) * segments;
+  const index = Math.min(segments - 1, Math.floor(scaled));
+  const tValue = scaled - index;
+  const from = points[index];
+  const to = points[index + 1];
+  const midpoint = [
+    (from[0] + to[0]) / 2,
+    (from[1] + to[1]) / 2 - 0.12,
+    (from[2] + to[2]) / 2 + 0.10
+  ];
+  const inv = 1 - tValue;
+  return projectIso(
+    inv * inv * from[0] + 2 * inv * tValue * midpoint[0] + tValue * tValue * to[0],
+    inv * inv * from[1] + 2 * inv * tValue * midpoint[1] + tValue * tValue * to[1],
+    inv * inv * from[2] + 2 * inv * tValue * midpoint[2] + tValue * tValue * to[2]
+  );
 }
 
 function drawManifoldTubes() {
@@ -1750,8 +2313,9 @@ function updateHud() {
   const conceptual = state.viewMode !== "orbit";
   const model = viewModels[state.viewMode];
   const contract = currentViewContract();
+  const scenario = currentScenario();
   modelBadge.textContent = model.label;
-  modelNote.textContent = model.note;
+  modelNote.textContent = `${scenario.name}: ${scenario.problem} ${model.note}`;
   frameBadge.textContent = contract.frame;
   scaleBadge.textContent = contract.scale;
   routeBadge.textContent = contract.routes;
@@ -1818,9 +2382,41 @@ function describeObject(id) {
       "Schematic taxi leg; real cycler rendezvous requires substantial maneuvering."
     );
   }
+  const dynamicRoute = dynamicRouteFamilies.find((item) => item.id === id);
+  if (dynamicRoute) return dynamicRouteInfo(dynamicRoute);
   const route = routeClasses.find((item) => item.id === id);
   if (route) return objectInfo(route, "conceptual route class");
   return null;
+}
+
+function dynamicRouteInfo(route) {
+  const metrics = routeWindowMetrics(route);
+  const open = metrics.availability ? "open / usable" : "waiting for next window";
+  return {
+    id: route.id,
+    name: route.name,
+    lead: route.role,
+    articleId: "low-energy-routes-view",
+    details: [
+      ["Type", route.type],
+      ["Model class", "Heuristic route-window model"],
+      ["Route claim", claimLabel(route.claim)],
+      ["Geometry", route.geometry],
+      ["Scenario", scenarios[route.scenarioId].name],
+      ["Window state", open],
+      ["Next window", metrics.wait <= 0 ? "now" : formatDate(metrics.nextWindow)],
+      ["Wait proxy", formatEta(metrics.wait)],
+      ["Travel time class", route.travelClass],
+      ["Cadence", `${Math.round(route.cadence)} d ${route.waitUnit}`],
+      ["Duty cycle", `${Math.round(route.dutyCycle * 100)}%`],
+      ["Reliability proxy", `${Math.round(route.reliability * 100)}%`],
+      ["Capacity proxy", `${Math.round(route.capacity * 100)}%`],
+      ["Suitability", `${Math.round(route.suitability * 100)}% ${route.payload}`],
+      ["Flow proxy", `${Math.round(metrics.flow * 100)}%`],
+      ["Waiting cost", `${Math.round(metrics.waitingCost)} conceptual days`],
+      ["Model limit", "Route family is conceptual; availability, waiting, and flow are heuristic values for future economics."]
+    ]
+  };
 }
 
 function objectInfo(item, phase, nextEvent = "--", eta = "--", modelNoteText = "") {
@@ -1857,7 +2453,7 @@ function modelLimitFor(modelClass) {
 }
 
 function connectedRoutes(id) {
-  return [...routeClasses, ...shuttleRoutes]
+  return [...routeClasses, ...shuttleRoutes, ...dynamicRouteFamilies]
     .filter((route) => route.from === id || route.to === id || (id === "cycler" && (route.from === "cycler" || route.to === "cycler")))
     .map((route) => route.name);
 }
@@ -1929,7 +2525,7 @@ function closeArticle() {
 }
 
 function updateSchedule() {
-  const rows = shuttleRoutes
+  const shuttleRows = shuttleRoutes
     .map((route) => {
       const trip = routeProgress(route);
       const active = trip.active;
@@ -1937,6 +2533,7 @@ function updateSchedule() {
       const time = active ? event.arrival : event.departure;
       return {
         id: route.id,
+        group: "Shuttle schedule",
         name: route.name,
         route: `${labelFor(route.from)} -> ${labelFor(route.to)}`,
         eta: formatEta(time - state.simDays),
@@ -1944,16 +2541,38 @@ function updateSchedule() {
         active,
         sortDay: time
       };
-    })
-    .sort((a, b) => a.sortDay - b.sortDay);
+    });
+  const dynamicRows = currentScenarioRoutes().map((route) => {
+    const metrics = routeWindowMetrics(route);
+    return {
+      id: route.id,
+      group: "Scenario route windows",
+      name: route.name,
+      route: `${labelFor(route.from)} -> ${labelFor(route.to)}`,
+      eta: metrics.wait <= 0 ? "open" : formatEta(metrics.wait),
+      meta: `${route.travelClass}; flow ${Math.round(metrics.flow * 100)}%; ${route.payload}; ${route.geometry}`,
+      active: metrics.availability > 0,
+      sortDay: metrics.nextWindow
+    };
+  });
+  const rows = [...dynamicRows, ...shuttleRows]
+    .sort((a, b) => a.group.localeCompare(b.group) || a.sortDay - b.sortDay);
+  const groups = ["Scenario route windows", "Shuttle schedule"];
 
-  scheduleList.innerHTML = rows.map((row) => `
-    <button class="schedule-item" type="button" data-route-id="${row.id}">
-      <span class="schedule-route">${row.route}</span>
-      <span class="schedule-eta">${row.active ? t("eta") : t("timePrefix")} ${row.eta}</span>
-      <span class="schedule-meta">${row.name} - ${row.meta}</span>
-    </button>
-  `).join("");
+  scheduleList.innerHTML = groups.map((group) => {
+    const groupRows = rows.filter((row) => row.group === group);
+    if (!groupRows.length) return "";
+    return `
+      <div class="schedule-group-label">${group}</div>
+      ${groupRows.map((row) => `
+        <button class="schedule-item ${row.group === "Scenario route windows" ? "scenario-row" : ""}" type="button" data-route-id="${row.id}">
+          <span class="schedule-route">${row.route}</span>
+          <span class="schedule-eta">${row.active ? t("eta") : t("timePrefix")} ${row.eta}</span>
+          <span class="schedule-meta">${row.name} - ${row.meta}</span>
+        </button>
+      `).join("")}
+    `;
+  }).join("");
 }
 
 function setZoom(nextZoom, anchor = { x: state.width / 2, y: state.height / 2 }) {
@@ -2031,8 +2650,10 @@ function currentReviewContext() {
   const targetId = state.reviewTargetId || state.selectedId;
   const info = targetId ? describeObject(targetId) : null;
   return {
-    version: "Demo 0.2.5",
+    version: "Demo 0.2.6",
     url: window.location.href,
+    scenarioId: state.scenarioId,
+    scenarioName: currentScenario().name,
     viewMode: state.viewMode,
     scaleMode: state.scaleMode,
     simDate: formatDate(state.simDays),
@@ -2096,7 +2717,7 @@ function tick(now) {
   const elapsed = Math.min(80, now - lastFrame);
   lastFrame = now;
   updateCameraTransition(now);
-  if (!state.paused && state.viewMode === "orbit") {
+  if (!state.paused && state.viewMode !== "gravity") {
     state.simDays += (elapsed / 1000) * state.speed * 0.08;
   }
   draw();
@@ -2122,7 +2743,7 @@ function setViewMode(mode) {
   document.body.dataset.viewMode = mode;
   modeButtons.forEach((button) => button.classList.toggle("active", button.dataset.viewMode === mode));
   canvas.style.cursor = mode === "orbit" ? "grab" : "default";
-  updateInspector(mode === "gravity" ? "leo-port" : mode === "manifold" ? "sun-earth-l1" : "earth");
+  updateInspector(mode === "gravity" ? terrainDefaultNode().id : mode === "manifold" ? currentScenario().defaultInspectId : currentScenario().defaultInspectId);
 }
 
 function setScaleMode(mode) {
@@ -2140,6 +2761,27 @@ function setScaleMode(mode) {
   };
   state.selectedId = representatives[mode] || "earth";
   updateInspector(state.selectedId);
+}
+
+function setScenario(id) {
+  if (!scenarios[id]) return;
+  state.scenarioId = id;
+  const scenario = currentScenario();
+  scenarioButtons.forEach((button) => button.classList.toggle("active", button.dataset.scenarioId === id));
+  if (state.scaleMode !== scenario.focusMode) {
+    state.scaleMode = scenario.focusMode;
+    scaleButtons.forEach((button) => button.classList.toggle("active", button.dataset.scaleMode === state.scaleMode));
+    state.zoom = 1;
+    state.pan = { x: 0, y: 0 };
+    startCameraTransition(state.scaleMode);
+  }
+  state.selectedId = state.viewMode === "gravity" ? terrainDefaultNode().id : scenario.defaultInspectId;
+  state.activeArticleId = state.viewMode === "gravity" ? "gravity-view" : state.viewMode === "manifold" ? "low-energy-routes-view" : "orbit-view";
+  updateInspector(state.selectedId);
+}
+
+function terrainDefaultNode() {
+  return currentScenario().terrain.nodes[0] || { id: "earth" };
 }
 
 function pointerPosition(event) {
@@ -2253,6 +2895,10 @@ speedButtons.forEach((button) => {
 
 modeButtons.forEach((button) => {
   button.addEventListener("click", () => setViewMode(button.dataset.viewMode));
+});
+
+scenarioButtons.forEach((button) => {
+  button.addEventListener("click", () => setScenario(button.dataset.scenarioId));
 });
 
 scaleButtons.forEach((button) => {
@@ -2371,7 +3017,7 @@ resize();
 setSpeed(10);
 document.body.dataset.viewMode = state.viewMode;
 document.body.dataset.sheetState = "peek";
-state.selectedId = "earth";
+setScenario(state.scenarioId);
 applyLanguage("en");
 updateInspector(state.selectedId);
 requestAnimationFrame(tick);
