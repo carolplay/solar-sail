@@ -1,12 +1,12 @@
-# Demo 002.5 Physical Coherence Spec
+# Demo 0.2.5 Physical Coherence Spec
 
-Target Version: Demo 002.5
+Target Version: Demo 0.2.5
 
 ## Goal
 
-Implement the first physical coherence pass from `docs/demo-002-5-physical-coherence-proposal.md`.
+Implement the first physical coherence pass from `docs/demo-0.2.5-physical-coherence-proposal.md`.
 
-Demo 002.5 should make the running viewer clearer about:
+Demo 0.2.5 should make the running viewer clearer about:
 
 - the coordinate frame currently being shown
 - whether local distances are physical or schematic
@@ -23,7 +23,7 @@ This is not a full physics-engine upgrade. It is a visual and data-contract upgr
 The app should identify itself as:
 
 ```text
-Demo 002.5
+Demo 0.2.5
 ```
 
 ### 2. View Contract HUD
@@ -104,7 +104,7 @@ The cycler inspector should continue to state that taxi arcs are timing symbols,
 
 ### 8. Concept View Boundaries
 
-Gravity Well View and Low-Energy Routes View should remain labeled as conceptual / research placeholders. Demo 002.5 does not need to implement Three.js or CR3BP geometry.
+Gravity Well View and Low-Energy Routes View should remain labeled as conceptual / research placeholders. Demo 0.2.5 does not need to implement Three.js or CR3BP geometry.
 
 ### 9. Concept View Coherence Pass
 
@@ -140,7 +140,7 @@ Verify:
 1. `node --check app.js` passes.
 2. `node scripts/build.mjs` passes.
 3. The app loads locally.
-4. The HUD shows Demo 002.5 and Frame / Scale / Routes.
+4. The HUD shows Demo 0.2.5 and Frame / Scale / Routes.
 5. Earth Gateway or Mars Gateway shows a schematic boundary.
 6. Route lines have visibly different styles.
 7. Cycler service schedule appears on desktop solar/inner views.

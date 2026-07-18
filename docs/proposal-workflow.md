@@ -14,7 +14,7 @@ The project is still discovering its physics model, visualization language, econ
 
 ## Why Proposal Before Spec
 
-Demo 001 implementation feedback showed several cases where the written spec was too firm for the actual discovery process:
+Demo 0.1.0 implementation feedback showed several cases where the written spec was too firm for the actual discovery process:
 
 - deployment was deferred
 - build tooling stayed simpler than expected
@@ -88,7 +88,7 @@ Purpose:
 Attempt execution and record whether the proposal survived contact with implementation.
 ```
 
-Create or update a spec only after:
+Planning / Organizer should create or update a spec only after:
 
 - the proposal has a clear recommendation
 - key unknowns have either been researched or explicitly deferred
@@ -97,6 +97,8 @@ Create or update a spec only after:
 - success criteria are testable
 
 Specs should describe what to build. Proposals should describe what may be worth building and why.
+
+Implementation should read the proposal and spec, but should not be responsible for inventing the spec from scratch. If the spec is unrealistic, implementation records the gap instead of silently changing the target.
 
 Each spec should include:
 
@@ -117,6 +119,8 @@ During implementation, record:
 - what was deferred
 - what assumptions proved wrong
 
+Implementation and operations may share a working note during active development. For early demos, it is acceptable for the same role to build, run local checks, test the UI, fix obvious issues, and repeat this cycle a few times before writing final feedback.
+
 ## Step 3: Feedback
 
 Purpose:
@@ -132,6 +136,8 @@ After implementation or prototype testing, write feedback that:
 - records test findings
 - separates implementation bugs from bad assumptions
 - recommends whether to update the spec, revise the proposal, or reopen brainstorm
+
+Feedback can be written after one or more implementation / operations cycles. It should summarize the final tested state, not every intermediate attempt.
 
 If feedback can improve the previous step, do so:
 
@@ -159,9 +165,17 @@ Examples of issues that should return to brainstorm:
 Prefer:
 
 ```text
-docs/demo-003-<topic>-proposal.md
-docs/demo-003-<topic>-spec.md
-docs/demo-003-<topic>-feedback.md
+docs/demo-<major.minor.patch>-<topic>-proposal.md
+docs/demo-<major.minor.patch>-<topic>-spec.md
+docs/demo-<major.minor.patch>-<topic>-feedback.md
+```
+
+Examples:
+
+```text
+docs/demo-0.2.6-dynamic-route-scenarios-proposal.md
+docs/demo-0.2.6-dynamic-route-scenarios-spec.md
+docs/demo-0.2.6-dynamic-route-scenarios-feedback.md
 ```
 
 For small cycles, one file may contain all three sections if that keeps the project easier to follow.

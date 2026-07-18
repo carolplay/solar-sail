@@ -1,10 +1,10 @@
-# Demo 002.5 Physical Coherence Proposal
+# Demo 0.2.5 Physical Coherence Proposal
 
-Target Version: Demo 002.5 proposal
+Target Version: Demo 0.2.5 proposal
 
 ## Problem
 
-Demo 002 made the viewer more honest by adding model labels, explanation entries, and route-atlas controls. That improved trust, but it did not fully solve the deeper problem: several visible elements still do not physically belong to the same model.
+Demo 0.2.0 made the viewer more honest by adding model labels, explanation entries, and route-atlas controls. That improved trust, but it did not fully solve the deeper problem: several visible elements still do not physically belong to the same model.
 
 The current experience mixes:
 
@@ -18,7 +18,7 @@ The current experience mixes:
 
 The labels warn users that these are approximate, schematic, or conceptual. However, the visuals can still imply stronger physical meaning than the model supports.
 
-Demo 002.5 should therefore be a physical coherence pass, not a feature expansion pass.
+Demo 0.2.5 should therefore be a physical coherence pass, not a feature expansion pass.
 
 Core question:
 
@@ -30,7 +30,7 @@ Can the viewer make physical sense at each scale, even when it remains approxima
 
 The project is about how physical constraints shape civilization. If the physical layer is incoherent, later route economics, settlement potential, and gameplay pressure will inherit weak foundations.
 
-Demo 002.5 should make the visual language trustworthy enough that future economic and infrastructure layers can sit on top of it.
+Demo 0.2.5 should make the visual language trustworthy enough that future economic and infrastructure layers can sit on top of it.
 
 This does not mean mission-grade astrodynamics. It means each view should be clear about:
 
@@ -44,7 +44,7 @@ This does not mean mission-grade astrodynamics. It means each view should be cle
 
 ## Current Evidence
 
-Demo 002 exposed several coherence gaps.
+Demo 0.2.0 exposed several coherence gaps.
 
 ### Mixed Scale Problem
 
@@ -100,7 +100,7 @@ Three.js or CR3BP work should not be added merely to make them look more impress
 
 ### Option A - Label-Only Continuation
 
-Keep Demo 002 mostly as-is and add stronger warnings.
+Keep Demo 0.2.0 mostly as-is and add stronger warnings.
 
 Pros:
 
@@ -112,11 +112,11 @@ Cons:
 
 - does not solve the visual contradiction
 - labels may become apologies for misleading geometry
-- weak foundation for Demo 003 economics
+- weak foundation for Demo 0.3.0 economics
 
 Assessment:
 
-Not enough for Demo 002.5.
+Not enough for Demo 0.2.5.
 
 ### Option B - Coordinate / Scale Contract
 
@@ -146,7 +146,7 @@ Cons:
 
 Assessment:
 
-Best core for Demo 002.5.
+Best core for Demo 0.2.5.
 
 ### Option C - Offline Ephemeris Upgrade
 
@@ -186,7 +186,7 @@ Cons:
 
 Assessment:
 
-Research candidate for later in 002.5, not the first implementation cut.
+Research candidate for later in 0.2.5, not the first implementation cut.
 
 ### Option E - Hide / Downgrade Concept Views
 
@@ -195,12 +195,12 @@ Temporarily reduce Gravity Well and Low-Energy Routes views to explanation surfa
 Pros:
 
 - prevents false confidence
-- focuses 002.5 on Orbit View and Route Atlas
+- focuses 0.2.5 on Orbit View and Route Atlas
 - keeps the app honest
 
 Cons:
 
-- removes some of the most visually exciting Demo 002 work
+- removes some of the most visually exciting Demo 0.2.0 work
 - may feel like a step backward
 
 Assessment:
@@ -209,7 +209,7 @@ Worth considering if concept views continue to undermine trust.
 
 ## Recommendation
 
-Demo 002.5 should use Option B as the main direction:
+Demo 0.2.5 should use Option B as the main direction:
 
 ```text
 Build a coordinate, scale, and route-claim contract.
@@ -226,7 +226,7 @@ The implementation should make a visual distinction between:
 Recommended working title:
 
 ```text
-Demo 002.5 - Physical Coherence Pass
+Demo 0.2.5 - Physical Coherence Pass
 ```
 
 This should not primarily be a 3D milestone. It should be the milestone where the viewer stops letting different model types visually blur into each other.
@@ -342,7 +342,7 @@ Avoid:
 ## Risks / Weak Assumptions
 
 - Users may still expect physically accurate astrodynamics once the visual design becomes more polished.
-- Removing or downgrading visual elements may feel less exciting than Demo 002.
+- Removing or downgrading visual elements may feel less exciting than Demo 0.2.0.
 - A coordinate contract may require a modest internal refactor before it becomes visible.
 - Ephemeris work can become a rabbit hole if it is not scoped tightly.
 - Cycler research may reveal that a simple honest visualization is more timeline-like than orbit-like.
@@ -355,7 +355,7 @@ Minimum research before spec:
 - identify a compact visual taxonomy for route claim types
 - research the simplest honest Aldrin-cycler representation suitable for a browser prototype
 - decide whether Earth/Moon and Mars local views should be separate canvases, separate modes, or visibly framed insets
-- evaluate whether concept views should remain in Demo 002.5 or be moved to a research-only surface
+- evaluate whether concept views should remain in Demo 0.2.5 or be moved to a research-only surface
 
 Optional research:
 
@@ -365,7 +365,7 @@ Optional research:
 
 ## Prototype Cut
 
-The smallest useful Demo 002.5 prototype:
+The smallest useful Demo 0.2.5 prototype:
 
 ```text
 A physically coherent Orbit View plus an honest Route Atlas overlay.
@@ -405,15 +405,15 @@ Do not include:
 
 ## Open Questions
 
-- Should Demo 002.5 keep all three current desktop views, or should concept views become secondary explanation surfaces?
+- Should Demo 0.2.5 keep all three current desktop views, or should concept views become secondary explanation surfaces?
 - Should the cycler be primarily visualized as an orbit, a schedule lane, or a hybrid?
-- Is a documented Keplerian model enough for 002.5, or should ephemeris JSON be part of the spec?
+- Is a documented Keplerian model enough for 0.2.5, or should ephemeris JSON be part of the spec?
 - Should local gateway views appear as separate modes, inset diagrams, or atlas sheets?
 - What is the minimum route taxonomy that is legible without adding too much UI?
 
 ## When This Becomes A Spec
 
-Convert this proposal into a Demo 002.5 spec when the following decisions are made:
+Convert this proposal into a Demo 0.2.5 spec when the following decisions are made:
 
 1. The coordinate / scale contract is accepted.
 2. The route claim taxonomy is chosen.

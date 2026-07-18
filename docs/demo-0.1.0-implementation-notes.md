@@ -1,10 +1,10 @@
-# Demo 001 Implementation Notes
+# Demo 0.1.0 Implementation Notes
 
-Target Version: Demo 001
+Target Version: Demo 0.1.0
 
-This note tracks how the implementation maps to `docs/demo-001-solar-infrastructure-viewer.md`.
+This note tracks how the implementation maps to `docs/demo-0.1.0-solar-infrastructure-viewer.md`.
 
-For explicit out-of-spec choices, known gaps, and manual test feedback, see `docs/demo-001-spec-delta-and-test-feedback.md`.
+For explicit out-of-spec choices, known gaps, and manual test feedback, see `docs/demo-0.1.0-spec-delta-and-test-feedback.md`.
 
 ## Implemented In This Pass
 
@@ -44,5 +44,5 @@ For explicit out-of-spec choices, known gaps, and manual test feedback, see `doc
 - Add a GitHub Pages workflow once the repository target is chosen.
 - Add generated ephemeris JSON if the prototype needs stronger planetary-position credibility.
 - Replace the manifold sketch with a dedicated CR3BP/manifold rendering engine or precomputed manifold dataset.
-- Split the large `app.js` into data, physics, rendering, and UI modules if Demo 002 grows the codebase.
+- Split the large `app.js` into data, physics, rendering, and UI modules if Demo 0.2.0 grows the codebase.
 - Add automated browser screenshot checks for each view and scale mode.

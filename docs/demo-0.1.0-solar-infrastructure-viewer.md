@@ -1,10 +1,10 @@
-# Demo 001 — Solar Infrastructure Viewer
+# Demo 0.1.0 — Solar Infrastructure Viewer
 
-Target Version: Demo 001
+Target Version: Demo 0.1.0
 
 ## Goal
 
-Upgrade Demo 000 from a stylized orbit animation into a more physically grounded solar-system infrastructure visualizer.
+Upgrade Demo 0.0.0 from a stylized orbit animation into a more physically grounded solar-system infrastructure visualizer.
 
 This is still **not gameplay**. It is a visualization/research prototype for building intuition around:
 
@@ -23,7 +23,7 @@ The core question:
 
 ## Scope Philosophy
 
-Demo 001 should improve physical credibility without becoming a full orbital-mechanics research project.
+Demo 0.1.0 should improve physical credibility without becoming a full orbital-mechanics research project.
 
 Important simplification:
 
@@ -59,7 +59,7 @@ Decision preference:
 - Keep the browser demo lightweight.
 - Prefer credible planetary positions over perfect spacecraft navigation.
 - If full browser-side ephemeris is too heavy, generate precomputed JSON data offline and load it in the web app.
-- For Demo 001, using approximate Keplerian elements is acceptable if clearly documented.
+- For Demo 0.1.0, using approximate Keplerian elements is acceptable if clearly documented.
 
 Deliverable:
 
@@ -73,7 +73,7 @@ It should include:
 - implementation complexity
 - browser feasibility
 - accuracy tradeoffs
-- recommendation for Demo 001
+- recommendation for Demo 0.1.0
 
 ---
 
@@ -179,7 +179,7 @@ Show:
 - slow/cheap vs fast/expensive route classes
 - possible connection between Earth system, Mars system, and Ceres
 
-It does not need true manifold computation in Demo 001.
+It does not need true manifold computation in Demo 0.1.0.
 
 Terminology note:
 
@@ -187,7 +187,7 @@ Terminology note:
 Low-Energy Routes View
 ```
 
-is the user-facing name. It can be documented as inspired by invariant manifolds and the Interplanetary Transport Network, but Demo 001 should not imply that it computes real manifold geometry.
+is the user-facing name. It can be documented as inspired by invariant manifolds and the Interplanetary Transport Network, but Demo 0.1.0 should not imply that it computes real manifold geometry.
 
 ---
 
@@ -418,7 +418,7 @@ Infrastructure potential: High
 
 Gravity Well View and Low-Energy Routes View may be expensive or conceptually complex.
 
-For Demo 001:
+For Demo 0.1.0:
 
 - They do not need to update continuously.
 - They can render once when entered.
@@ -426,7 +426,7 @@ For Demo 001:
 - They should clearly communicate that they are conceptual / approximate.
 - They should not block work on Orbit View.
 
-This keeps Demo 001 achievable.
+This keeps Demo 0.1.0 achievable.
 
 ---
 
@@ -445,15 +445,15 @@ Do not implement yet:
 - combat
 - settlement simulation
 
-Demo 001 is still a visualization and research prototype.
+Demo 0.1.0 is still a visualization and research prototype.
 
 ---
 
 ## Success Criteria
 
-Demo 001 succeeds if:
+Demo 0.1.0 succeeds if:
 
-1. Planetary motion feels more physically credible than Demo 000.
+1. Planetary motion feels more physically credible than Demo 0.0.0.
 2. The demo is publicly accessible online.
 3. Users can switch between Orbit, Gravity Well, and Low-Energy Routes views.
 4. Users can understand why LEO, Lagrange points, Phobos, Deimos, and Ceres matter.
@@ -465,7 +465,7 @@ Demo 001 succeeds if:
 
 ## Implementation Note
 
-Do not try to solve every physics problem in Demo 001.
+Do not try to solve every physics problem in Demo 0.1.0.
 
 Recommended approach:
 

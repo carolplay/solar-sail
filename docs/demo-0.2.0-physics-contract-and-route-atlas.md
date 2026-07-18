@@ -1,14 +1,14 @@
-# Demo 002 - Physics Contract and Route Atlas
+# Demo 0.2.0 - Physics Contract and Route Atlas
 
-Target Version: Demo 002
+Target Version: Demo 0.2.0
 
 ## Goal
 
-Demo 002 should make the viewer honest about its physics.
+Demo 0.2.0 should make the viewer honest about its physics.
 
-Demo 001 proved that a solar-system infrastructure viewer is visually compelling, but it also exposed a core problem: the current prototype mixes real orbital concepts, approximate browser-side physics, symbolic local layouts, and conceptual teaching diagrams without clearly separating them.
+Demo 0.1.0 proved that a solar-system infrastructure viewer is visually compelling, but it also exposed a core problem: the current prototype mixes real orbital concepts, approximate browser-side physics, symbolic local layouts, and conceptual teaching diagrams without clearly separating them.
 
-Demo 002 should establish a clear physics contract:
+Demo 0.2.0 should establish a clear physics contract:
 
 ```text
 What is physically modeled?
@@ -127,16 +127,16 @@ Purpose:
 - teach that distance and energy cost are not the same thing
 - show why gravity wells shape logistics
 
-Problem in Demo 001:
+Problem in Demo 0.1.0:
 
 The view communicates the idea, but the 2D/pseudo-3D presentation is not strong enough. It does not yet produce a real sense of terrain, slope, saddle, or energy surface.
 
-Demo 002 requirement:
+Demo 0.2.0 requirement:
 
 - Continue research toward a real 3D gravity-well visualization.
 - Decide whether the next implementation should use Three.js.
 - Prefer an interactive 3D surface where users can rotate, zoom, and compare Earth, Moon, Mars, Phobos, Deimos, and Ceres wells.
-- If the final Demo 002 implementation remains conceptual, label it clearly.
+- If the final Demo 0.2.0 implementation remains conceptual, label it clearly.
 
 ### Low-Energy Routes View
 
@@ -151,11 +151,11 @@ Purpose:
 - teach low-energy corridors as the solar-system equivalent of currents and trade winds
 - introduce Lagrange gateways, invariant-manifold inspiration, halo/Lyapunov orbit families, and slow cargo corridors
 
-Problem in Demo 001:
+Problem in Demo 0.1.0:
 
 The view is not yet visually or physically convincing. It suggests the idea, but it does not help users really understand transfer manifolds.
 
-Demo 002 requirement:
+Demo 0.2.0 requirement:
 
 - Continue research on circular restricted three-body problem visualization.
 - Investigate:
@@ -183,9 +183,9 @@ invariant manifolds / Interplanetary Transport Network
 
 Cyclers remain the best near-term example of interplanetary scheduled infrastructure.
 
-Demo 001 currently treats the Aldrin cycler as a stylized repeating ellipse with schedule markers. That is useful as a metaphor, but not physically strong enough.
+Demo 0.1.0 currently treats the Aldrin cycler as a stylized repeating ellipse with schedule markers. That is useful as a metaphor, but not physically strong enough.
 
-Demo 002 should research and improve this.
+Demo 0.2.0 should research and improve this.
 
 ### Research Questions
 
@@ -230,7 +230,7 @@ Planetary flyby window
 
 ## 3. Logistics Nodes and Orbit Toggles
 
-Demo 002 should begin defining additional key logistics points and orbit families.
+Demo 0.2.0 should begin defining additional key logistics points and orbit families.
 
 The goal is not to show every possible object. The goal is to let users selectively reveal layers of solar-system infrastructure and energy context.
 
@@ -321,7 +321,7 @@ Controls should avoid covering the main canvas, especially on mobile.
 
 ## 4. Wikipedia-Style Explanation Mode
 
-Demo 002 should generate a reference-style explanation surface inside the app.
+Demo 0.2.0 should generate a reference-style explanation surface inside the app.
 
 Purpose:
 
@@ -377,9 +377,9 @@ In this demo, Phobos Port is shown as a schematic Mars gateway. Its exact positi
 
 ## 5. 3D Visualization Research
 
-The two new Demo 001 concept views are not yet strong enough.
+The two new Demo 0.1.0 concept views are not yet strong enough.
 
-Demo 002 should decide whether 3D is required for the next major visual leap.
+Demo 0.2.0 should decide whether 3D is required for the next major visual leap.
 
 ### Gravity Well 3D Research
 
@@ -422,9 +422,9 @@ It should recommend one of:
 
 ## 6. Mobile Layout Upgrade
 
-Demo 001 is usable on mobile, but the panels cover too much of the main view.
+Demo 0.1.0 is usable on mobile, but the panels cover too much of the main view.
 
-Demo 002 should treat mobile as a real design target, not just a responsive afterthought.
+Demo 0.2.0 should treat mobile as a real design target, not just a responsive afterthought.
 
 ### Problems
 
@@ -467,7 +467,7 @@ On a phone viewport, the main solar-system view should remain the primary experi
 
 ## 7. Updated View Set
 
-Demo 002 should keep the three main desktop views, but make their model status explicit.
+Demo 0.2.0 should keep the three main desktop views, but make their model status explicit.
 
 ```text
 Orbit View
@@ -508,15 +508,15 @@ Do not implement yet:
 - full mission optimization
 - authoritative spacecraft navigation
 
-Demo 002 is a foundation pass: physics credibility, route meaning, explainability, and layout quality.
+Demo 0.2.0 is a foundation pass: physics credibility, route meaning, explainability, and layout quality.
 
 ---
 
-## Demo 002 Delivery Cut
+## Demo 0.2.0 Delivery Cut
 
-Demo 002 should prioritize trust-building over deep simulation.
+Demo 0.2.0 should prioritize trust-building over deep simulation.
 
-The executable Demo 002 scope is:
+The executable Demo 0.2.0 scope is:
 
 - explicit model labels for every major view and selected object
 - documented orbital epoch, model time span, and approximation limits
@@ -527,7 +527,7 @@ The executable Demo 002 scope is:
 - mobile layout changes that keep the canvas primary, including a bottom-sheet inspector
 - a 3D physics-view research note that recommends the next technical path
 
-Demo 002 should not require:
+Demo 0.2.0 should not require:
 
 - a production ephemeris pipeline
 - JPL Horizons, Skyfield, or SPICE integration
@@ -537,13 +537,13 @@ Demo 002 should not require:
 - complete probe and science-mission coverage
 - outer-system logistics visualization beyond research placeholders
 
-If planetary positions are not generated from an ephemeris table, Demo 002 may use documented Keplerian elements tied to a clear epoch. If concept views remain 2D or pseudo-3D, they must be labeled as conceptual or research placeholders.
+If planetary positions are not generated from an ephemeris table, Demo 0.2.0 may use documented Keplerian elements tied to a clear epoch. If concept views remain 2D or pseudo-3D, they must be labeled as conceptual or research placeholders.
 
-## Demo 002.5 Deferrals
+## Demo 0.2.5 Deferrals
 
-Demo 002.5 is the follow-up pass for items that need research, data generation, or a larger rendering architecture.
+Demo 0.2.5 is the follow-up pass for items that need research, data generation, or a larger rendering architecture.
 
-Candidate Demo 002.5 work:
+Candidate Demo 0.2.5 work:
 
 - decide whether to add Three.js for concept views only or create a fuller 3D scene architecture
 - prototype an interactive 3D gravity-well surface
@@ -554,13 +554,13 @@ Candidate Demo 002.5 work:
 - expand probe/science mission layers after the base layer system is stable
 - revisit mobile interaction if 3D views become part of the product experience
 
-Demo 002.5 should still avoid claiming mission-grade astrodynamics unless the data and model support that claim.
+Demo 0.2.5 should still avoid claiming mission-grade astrodynamics unless the data and model support that claim.
 
 ---
 
 ## Success Criteria
 
-Demo 002 succeeds if:
+Demo 0.2.0 succeeds if:
 
 1. Users can tell which parts are ephemeris-like, schematic, conceptual, or research placeholders.
 2. Planetary positions are tied to a documented epoch or generated ephemeris dataset.
@@ -573,7 +573,7 @@ Demo 002 succeeds if:
 
 ## Implementation Note
 
-Demo 002 should not chase perfect astrodynamics. It should build trust.
+Demo 0.2.0 should not chase perfect astrodynamics. It should build trust.
 
 The right outcome is:
 

@@ -1,10 +1,10 @@
-# Demo 003 Economy Model Research
+# Demo 0.3.0 Economy Model Research
 
-Target Version: Demo 003 research input
+Target Version: Demo 0.3.0 research input
 
 ## Purpose
 
-Demo 003 may be the first version to introduce economic factors, but it should not invent an economy from intuition alone.
+Demo 0.3.0 may be the first version to introduce economic factors, but it should not invent an economy from intuition alone.
 
 This note summarizes research directions from transport economics, virtual economy literature, and online-game economy practice. The goal is to identify the smallest defensible economic model for solar-system infrastructure without prematurely building a full tycoon game.
 
@@ -68,7 +68,7 @@ Important lessons:
 Demo implication:
 
 ```text
-If Demo 003 introduces money, it must also define sources, sinks, and observability.
+If Demo 0.3.0 introduces money, it must also define sources, sinks, and observability.
 ```
 
 Without that, currency becomes decorative and risks misleading the design.
@@ -89,7 +89,7 @@ Relevant practice:
 Demo implication:
 
 ```text
-Demo 003 should expose economic telemetry before trying to simulate a full market.
+Demo 0.3.0 should expose economic telemetry before trying to simulate a full market.
 ```
 
 Useful telemetry examples:
@@ -114,7 +114,7 @@ Demo implication:
 Economic controls should be treated as interventions with side effects, not as simple balance knobs.
 ```
 
-This supports keeping Demo 003 small and observable.
+This supports keeping Demo 0.3.0 small and observable.
 
 #### Star Wars Galaxies / Faucet-Drain Practice
 
@@ -123,12 +123,12 @@ Historical MMO economy discussion emphasizes faucets, drains, item decay, and th
 Demo implication:
 
 ```text
-If a currency exists, Demo 003 needs both creation paths and deletion paths.
+If a currency exists, Demo 0.3.0 needs both creation paths and deletion paths.
 ```
 
-However, Demo 003 may avoid player currency entirely and model costs/revenues as explanatory metrics instead.
+However, Demo 0.3.0 may avoid player currency entirely and model costs/revenues as explanatory metrics instead.
 
-## Candidate Model For Demo 003
+## Candidate Model For Demo 0.3.0
 
 Recommended direction:
 
@@ -234,25 +234,25 @@ Phobos pressure increased because:
 - maintenance burden is moderate
 ```
 
-## Demo 003 Recommendation
+## Demo 0.3.0 Recommendation
 
-Demo 003 should not be called "economy simulation" yet.
+Demo 0.3.0 should not be called "economy simulation" yet.
 
 Better framing:
 
 ```text
-Demo 003 - Economic Pressure Map
+Demo 0.3.0 - Economic Pressure Map
 ```
 
 or:
 
 ```text
-Demo 003 - Infrastructure Economics Prototype
+Demo 0.3.0 - Infrastructure Economics Prototype
 ```
 
 The build should introduce economic pressure as an explanatory layer over the route atlas.
 
-## Out Of Scope For Demo 003
+## Out Of Scope For Demo 0.3.0
 
 - full currency loop
 - player wallet

@@ -1,8 +1,29 @@
-# Project Direction After Demo 001
+# Project Directions
 
-Target Version: Roadmap after Demo 001
+Target Version: Project roadmap
 
-This note captures the design direction from the post-Demo 000 / Demo 001 brainstorm. It is a north-star document, not an implementation checklist.
+This note captures the continuing project direction from Demo 0.1.0 onward. It is a north-star and roadmap document, not an implementation checklist.
+
+## Version Structure
+
+Use semantic demo versions in docs and references:
+
+| Old shorthand | Current version | Meaning |
+| --- | --- | --- |
+| Demo 000 | Demo 0.0.0 | first solar network viewer |
+| Demo 001 | Demo 0.1.0 | solar infrastructure viewer |
+| Demo 002 | Demo 0.2.0 | physics contract and route atlas |
+| Demo 002.5 | Demo 0.2.5 | physical coherence pass |
+| Demo 002.6 | Demo 0.2.6 | dynamic route scenarios proposal |
+| Demo 003 | Demo 0.3.0 | economy / infrastructure pressure direction |
+
+Version-specific proposal/spec/feedback documents should use the same version in their filenames:
+
+```text
+docs/demo-0.2.6-<topic>-proposal.md
+docs/demo-0.2.6-<topic>-spec.md
+docs/demo-0.2.6-<topic>-feedback.md
+```
 
 ## Process Note
 
@@ -126,13 +147,13 @@ A star system can have only a few major planets and still support many meaningfu
 
 ## Demo Roadmap
 
-### Demo 000: Solar Network Viewer
+### Demo 0.0.0: Solar Network Viewer
 
 Goal: test whether a living solar-system transportation network is visually compelling.
 
 Status: completed as a first pass.
 
-### Demo 001: Solar Infrastructure Viewer
+### Demo 0.1.0: Solar Infrastructure Viewer
 
 Goal: make the network more physically credible and easier to inspect across multiple conceptual views.
 
@@ -160,9 +181,9 @@ is preferred over:
 Transfer Manifold View
 ```
 
-The view can mention invariant manifolds and the Interplanetary Transport Network as inspiration, but Demo 001 does not calculate real manifolds.
+The view can mention invariant manifolds and the Interplanetary Transport Network as inspiration, but Demo 0.1.0 does not calculate real manifolds.
 
-### Demo 002: Physics Contract and Route Atlas
+### Demo 0.2.0: Physics Contract and Route Atlas
 
 Goal: make the viewer honest about its physics and begin turning it into a reference atlas for routes, nodes, energy regimes, and infrastructure meaning.
 
@@ -179,12 +200,12 @@ Primary ideas:
 
 Execution cut:
 
-- Demo 002 is the trust and atlas pass, not the full physics-engine pass.
+- Demo 0.2.0 is the trust and atlas pass, not the full physics-engine pass.
 - It should ship model labels, documented approximations, layer toggles, explanation entries, cycler honesty, and mobile layout improvements.
 - It may use documented Keplerian elements tied to an epoch instead of a full ephemeris pipeline.
-- 3D gravity wells, CR3BP manifold tubes, SPICE/Skyfield/JPL data pipelines, and sampled cycler trajectories should be researched but not required for Demo 002 completion.
+- 3D gravity wells, CR3BP manifold tubes, SPICE/Skyfield/JPL data pipelines, and sampled cycler trajectories should be researched but not required for Demo 0.2.0 completion.
 
-### Demo 002.5: Physical Coherence Pass
+### Demo 0.2.5: Physical Coherence Pass
 
 Goal: make the viewer physically coherent at each scale before adding economic pressure or deeper 3D physics.
 
@@ -198,11 +219,39 @@ Primary ideas:
 - optionally scope ephemeris JSON or Three.js spikes only after the model contract is clear
 - keep all advanced physics claims visibly tied to their actual model and data provenance
 
-See `docs/demo-002-5-physical-coherence-proposal.md`.
+See `docs/demo-0.2.5-physical-coherence-proposal.md`.
 
-### Demo 003: Network Metrics / Infrastructure Potential
+### Demo 0.2.6: Dynamic Route Scenarios
+
+Goal: make route behavior visibly time-dependent and start turning scale presets into playable route theaters before adding the Demo 0.3.0 economic model.
+
+Demo 0.2.6 sits between physical coherence and economy. It should preserve Demo 0.2.5's model honesty while adding the route telemetry that economics will later need.
+
+Low-Energy Routes should become dynamic. Static corridors are not enough, because the economic layer needs time-dependent route information:
+
+- when a corridor is practically usable
+- how long slow cargo waits
+- whether a route is continuous, seasonal, or windowed
+- how transfer cadence affects flow
+- how cheap/slow routes compete with fast/expensive routes
+
+The current scale selector should also evolve toward scenario selection. The analogy is the Age of Sail: a world map may be known, but playable situations are concrete routes and ports, such as Mediterranean trade, Atlantic crossing, or a specific harbor network. In this project, comparable scenarios include:
+
+- Earth-Moon logistics
+- Earth-Mars service corridor
+- Mars-Phobos-Deimos gateway operations
+- Mars-Ceres / asteroid volatile logistics
+- Lagrange relay and depot networks
+
+Scenario selection should define the playable/inspectable context, while scale remains a supporting camera or atlas function.
+
+See `docs/demo-0.2.6-dynamic-route-scenarios-proposal.md`.
+
+### Demo 0.3.0: Network Metrics / Infrastructure Potential
 
 Goal: begin explaining why some places naturally become ports, depots, towns, or gateway settlements, including the first economic pressures that make infrastructure valuable.
+
+Demo 0.3.0 should build on Demo 0.2.5's physical/visual affordances and Demo 0.2.6's dynamic route/scenario substrate. The important handoff is not mission-grade accuracy; it is that route claims, scale contracts, schematic boundaries, service-pattern visuals, and route telemetry are clear enough to carry economic overlays.
 
 Primary ideas:
 
@@ -222,9 +271,9 @@ Primary ideas:
 - route revenue potential
 - risk premium
 
-Demo 003 should not yet be a full tycoon game. It should make the system able to explain why Phobos, Deimos, Ceres, LEO, and Lagrange regions matter differently.
+Demo 0.3.0 should not yet be a full tycoon game. It should make the system able to explain why Phobos, Deimos, Ceres, LEO, and Lagrange regions matter differently.
 
-Demo 003 should avoid a simple compare/ranking mode. Infrastructure decisions are contextual and should not be reduced to "A is better than B." The useful model is scenario pressure:
+Demo 0.3.0 should avoid a simple compare/ranking mode. Infrastructure decisions are contextual and should not be reduced to "A is better than B." The useful model is scenario pressure:
 
 ```text
 Given this demand, cost, risk, route window, and infrastructure state,
@@ -312,13 +361,13 @@ This can still borrow from game design, but the immediate product shape should b
 - explanations and telemetry instead of hidden scoring
 - iteration and review instead of a closed gameplay loop
 
-## Post-Demo 001 Progression
+## Post-Demo 0.1.0 Progression
 
 ### Stage 1: Visual Credibility
 
 Make the solar system look like a real transportation and energy network.
 
-Demo 001 belongs here.
+Demo 0.1.0 belongs here.
 
 ### Stage 2: Network Metrics
 

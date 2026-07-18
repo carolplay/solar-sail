@@ -26,13 +26,13 @@ Target Version: Project memory / ongoing process
 
 - Use `brainstorm-recorder` in future discussion turns when a brainstorm or planning result should be captured.
 
-## 2026-07-09 - Demo 003 Direction
+## 2026-07-09 - Demo 0.3.0 Direction
 
 ### Decisions
 
-- Demo 003 should be the first version to introduce economic factors.
-- Demo 003 should still focus on infrastructure potential, not a full tycoon loop.
-- Remove the proposed Compare Mode from the Demo 003 direction.
+- Demo 0.3.0 should be the first version to introduce economic factors.
+- Demo 0.3.0 should still focus on infrastructure potential, not a full tycoon loop.
+- Remove the proposed Compare Mode from the Demo 0.3.0 direction.
 - Avoid simplifying infrastructure judgment into direct rankings such as "Phobos vs Deimos" or "Ceres vs Vesta."
 - Economic modeling should appear as scenario pressure: demand, cost, risk, route windows, maintenance burden, revenue potential, and infrastructure state.
 
@@ -45,22 +45,22 @@ Target Version: Project memory / ongoing process
 ### Open Questions
 
 - What is the smallest economic model that changes infrastructure value without becoming a tycoon game?
-- Should Demo 003 expose scenarios such as science logistics, Mars settlement support, asteroid volatiles, or passenger migration?
+- Should Demo 0.3.0 expose scenarios such as science logistics, Mars settlement support, asteroid volatiles, or passenger migration?
 - Which economic variables should be fixed assumptions and which should be user-adjustable?
 
 ### Next Actions
 
-- Draft a Demo 003 spec around infrastructure potential plus economic pressure.
+- Draft a Demo 0.3.0 spec around infrastructure potential plus economic pressure.
 - Explicitly mark full economy, resources, population, and settlement simulation as out of scope unless the spec narrows them to explanatory metrics.
 
-## 2026-07-09 - Demo 003 Economy Research Gate
+## 2026-07-09 - Demo 0.3.0 Economy Research Gate
 
 ### Decisions
 
-- Do not add an economic model to Demo 003 from intuition alone.
-- Before writing the Demo 003 spec, review transport economics, virtual economy literature, and online-game economy practice.
+- Do not add an economic model to Demo 0.3.0 from intuition alone.
+- Before writing the Demo 0.3.0 spec, review transport economics, virtual economy literature, and online-game economy practice.
 - Treat EVE Online-style telemetry, MMO faucet/sink practice, OSRS market intervention research, and transport generalized-cost models as relevant inputs.
-- Frame the likely Demo 003 direction as economic pressure over infrastructure, not as a complete economy simulation.
+- Frame the likely Demo 0.3.0 direction as economic pressure over infrastructure, not as a complete economy simulation.
 
 ### Rationale
 
@@ -70,12 +70,12 @@ Target Version: Project memory / ongoing process
 
 ### Research Output
 
-- Added `docs/demo-003-economy-model-research.md`.
+- Added `docs/demo-0.3.0-economy-model-research.md`.
 
 ### Next Actions
 
-- Use the research note as input before drafting `docs/demo-003-*.md`.
-- Decide whether Demo 003 should be named `Economic Pressure Map` or `Infrastructure Economics Prototype`.
+- Use the research note as input before drafting `docs/demo-0.3.0-*.md`.
+- Decide whether Demo 0.3.0 should be named `Economic Pressure Map` or `Infrastructure Economics Prototype`.
 
 ## 2026-07-09 - Proposal-First Planning
 
@@ -88,14 +88,14 @@ Target Version: Project memory / ongoing process
 
 ### Rationale
 
-- Demo 001 implementation feedback showed many reasonable deviations from the initial spec.
+- Demo 0.1.0 implementation feedback showed many reasonable deviations from the initial spec.
 - Early project work still contains research uncertainty in physics, visualization, economic modeling, and gameplay framing.
 - Proposal documents are better suited for capturing options, rationale, weak assumptions, and research gates.
 
 ### Next Actions
 
-- Draft Demo 003 as a proposal first, using `docs/demo-003-economy-model-research.md` as research input.
-- Convert the Demo 003 proposal into a spec only after the economic model and prototype cut are clear.
+- Draft Demo 0.3.0 as a proposal first, using `docs/demo-0.3.0-economy-model-research.md` as research input.
+- Convert the Demo 0.3.0 proposal into a spec only after the economic model and prototype cut are clear.
 
 ## 2026-07-09 - Proposal-Spec-Feedback Loop
 
@@ -116,36 +116,36 @@ Target Version: Project memory / ongoing process
 ### Next Actions
 
 - Use `docs/proposal-workflow.md` as the project process reference.
-- Apply the loop to Demo 003: economy brainstorm/research -> proposal -> spec -> feedback.
+- Apply the loop to Demo 0.3.0: economy brainstorm/research -> proposal -> spec -> feedback.
 
-## 2026-07-09 - Demo 002.5 Physical Coherence Direction
+## 2026-07-09 - Demo 0.2.5 Physical Coherence Direction
 
 ### Decisions
 
-- Start Demo 002.5 as a proposal, not a spec.
-- Reframe Demo 002.5 from "3D physics and data pipeline decision" to "physical coherence pass."
-- Treat Three.js, ephemeris JSON, and CR3BP work as possible tools, not the purpose of 002.5.
-- Focus 002.5 on coordinate frames, scale contracts, route-line meaning, cycler honesty, and concept-view boundaries.
-- Add `docs/demo-002-5-physical-coherence-proposal.md`.
+- Start Demo 0.2.5 as a proposal, not a spec.
+- Reframe Demo 0.2.5 from "3D physics and data pipeline decision" to "physical coherence pass."
+- Treat Three.js, ephemeris JSON, and CR3BP work as possible tools, not the purpose of 0.2.5.
+- Focus 0.2.5 on coordinate frames, scale contracts, route-line meaning, cycler honesty, and concept-view boundaries.
+- Add `docs/demo-0.2.5-physical-coherence-proposal.md`.
 
 ### Rationale
 
-- Demo 002 improved labeling and explanations, but some visible physical relationships still do not make sense.
+- Demo 0.2.0 improved labeling and explanations, but some visible physical relationships still do not make sense.
 - More labels are not enough if the visuals still imply stronger physical claims than the model supports.
-- Demo 003 economics would sit on weak ground if the physical layer remains incoherent.
+- Demo 0.3.0 economics would sit on weak ground if the physical layer remains incoherent.
 - A 3D implementation could make weak physics look more authoritative unless the model contract is fixed first.
 
 ### Open Questions
 
 - Should concept views remain primary modes or move into secondary explanation/research surfaces?
 - Should the cycler become a schedule lane, a stylized orbit, or a hybrid?
-- Is documented Keplerian data enough for 002.5, or does the spec need an ephemeris JSON experiment?
+- Is documented Keplerian data enough for 0.2.5, or does the spec need an ephemeris JSON experiment?
 - Should local gateway views become separate modes, atlas sheets, or inset diagrams?
 
 ### Next Actions
 
-- Discuss the 002.5 proposal and choose the coordinate / scale contract.
-- Pick the route claim taxonomy before writing the 002.5 spec.
+- Discuss the 0.2.5 proposal and choose the coordinate / scale contract.
+- Pick the route claim taxonomy before writing the 0.2.5 spec.
 - Decide the cycler representation direction before implementation.
 
 ## 2026-07-09 - Permission and Global Memory Intent
@@ -173,22 +173,195 @@ Target Version: Project memory / ongoing process
 
 - Reframe the project away from "game demo" and toward "gamified simulator."
 - Treat the current product direction as an infrastructure systems lab with game-like interaction.
-- Demo 003 should avoid defaulting to traditional game loops, win states, or tycoon mechanics.
+- Demo 0.3.0 should avoid defaulting to traditional game loops, win states, or tycoon mechanics.
 - Economic and operational layers should appear as scenarios, pressure maps, interventions, telemetry, and explanations.
 
 ### Rationale
 
-- The 2.5 direction is increasingly about model clarity, route claims, physical coherence, local review, and explanatory tooling.
+- The 0.2.5 direction is increasingly about model clarity, route claims, physical coherence, local review, and explanatory tooling.
 - That trajectory fits a simulator better than a conventional game demo.
 - Game design remains useful, but primarily as interaction design: making complex systems explorable, legible, and motivating.
 
 ### Open Questions
 
 - What amount of gamification is useful before it starts distorting the model?
-- Should Demo 003 be framed as `Economic Pressure Simulator`, `Infrastructure Systems Lab`, or another proposal title?
+- Should Demo 0.3.0 be framed as `Economic Pressure Simulator`, `Infrastructure Systems Lab`, or another proposal title?
 - Which interactions should remain analytical controls, and which can become game-like interventions?
 
 ### Next Actions
 
-- Draft Demo 003 as a proposal for a gamified infrastructure simulator rather than a game demo.
-- Use the proposal to decide whether any actual game loop belongs before Demo 004.
+- Draft Demo 0.3.0 as a proposal for a gamified infrastructure simulator rather than a game demo.
+- Use the proposal to decide whether any actual game loop belongs before Demo 0.4.0.
+
+## 2026-07-17 - Four Role Workflow
+
+### Decisions
+
+- Split future work into four lightweight roles:
+  - overall planning / evaluation
+  - science advisor / game design
+  - development
+  - operations / UX
+- Keep roles intentionally overlapping and lightweight.
+- Use the roles to clarify outputs, not to add heavy process.
+- Add `docs/project-role-guidelines.md`.
+
+### Rationale
+
+- The project now combines planning, scientific research, simulator/game design, implementation, and feedback operations.
+- Without role separation, research uncertainty, implementation tasks, and UX feedback can collapse into one vague next step.
+- The role split supports the existing proposal -> spec -> feedback loop without making it prematurely bureaucratic.
+
+### Next Actions
+
+- Use the four roles when drafting the Demo 0.3.0 proposal.
+- Let Science Advisor / Game Design produce research and scenario inputs before Demo 0.3.0 becomes a spec.
+
+## 2026-07-17 - Demo 0.2.5 Value Before Demo 0.3.0
+
+### Decisions
+
+- Do not push Demo 0.2.5 toward a perfect physics or visual milestone.
+- Keep Demo 0.2.5 valuable as the physical/visual substrate for Demo 0.3.0.
+- Demo 0.3.0 can add an economic model directly, but should reuse 0.2.5's route claims, scale contracts, visual layers, and concept-view playability.
+- Treat remaining 0.2.5 work as selective polish and coherence fixes, not as a full physics-engine upgrade.
+
+### Rationale
+
+- Demo 0.2.5 still has meaningful playability in physical models and visual presentation: route layers, scale contracts, cycler service semantics, concept views, and local review.
+- Demo 0.3.0 economic pressure will be easier to understand if users can already see route classes, schematic vs physical scale, and infrastructure relationships.
+- Chasing physically perfect ephemeris, 3D manifolds, or authoritative cycler trajectories before economics would delay the simulator's core direction.
+
+### Open Questions
+
+- Which 0.2.5 visual elements should be kept as primary interaction surfaces in Demo 0.3.0?
+- Which 0.2.5 issues must be fixed before economic overlays, especially local schematic coordinate readouts and mobile complexity?
+- Should Gravity Well View and Low-Energy Routes View become economic scenario explanation surfaces rather than standalone physics ambitions?
+
+### Next Actions
+
+- Draft Demo 0.3.0 as an economic-pressure proposal that explicitly builds on Demo 0.2.5 visual/physical affordances.
+- Keep Demo 0.2.5 feedback focused on blockers for Demo 0.3.0 rather than exhaustive visual refinement.
+
+## 2026-07-17 - Dynamic Routes And Scenarios
+
+### Decisions
+
+- Low-Energy Routes should not remain purely static visual corridors.
+- Add time variation to Low-Energy Routes so the viewer can communicate dynamic route availability, cadence, waiting time, and slow/cheap flow.
+- Treat dynamic route behavior as an input to the future economic model, not just as visual polish.
+- Reframe scale presets such as Inner System and Earth Gateway toward scenario selection.
+- Scenarios should behave like playable maritime situations: known global geography, but concrete local/route problems.
+
+### Rationale
+
+- Economic pressure depends on time: window frequency, transfer duration, reliability, waiting cost, and route cadence.
+- A static Low-Energy Routes view cannot explain why a slow cheap route is economically useful or when it becomes a bottleneck.
+- A scenario such as Earth-Moon logistics or Earth-Mars service corridor is more playable than a generic zoom mode.
+- The Age of Sail analogy works better when the simulator offers concrete route/port theaters rather than only a global map.
+
+### Candidate Scenarios
+
+- Earth-Moon logistics
+- Earth-Mars service corridor
+- Mars-Phobos-Deimos gateway operations
+- Mars-Ceres / asteroid volatile logistics
+- Lagrange relay and depot network
+
+### Open Questions
+
+- Should scenario selection replace scale selection, or sit above it?
+- What is the simplest time model for Low-Energy Routes: pulsing corridors, route windows, moving packets, or scheduled flow bands?
+- Which dynamic route properties should be exposed to the economic model first: availability, travel time, reliability, capacity, or waiting cost?
+
+### Next Actions
+
+- Include dynamic Low-Energy Routes and scenario selection as first-class topics in the Demo 0.3.0 proposal.
+- Avoid treating scale modes as the main interaction model once scenario design begins.
+
+## 2026-07-17 - Demo 0.2.6 Proposal
+
+### Decisions
+
+- Position the next iteration as Demo 0.2.6.
+- Draft Demo 0.2.6 from the Science Advisor / Game Design perspective.
+- Focus Demo 0.2.6 on dynamic Low-Energy Routes and scenario-based route theaters.
+- Keep Demo 0.2.6 between physical coherence and economic modeling: it prepares route telemetry for Demo 0.3.0 but does not implement the full economy.
+- Add `docs/demo-0.2.6-dynamic-route-scenarios-proposal.md`.
+
+### Rationale
+
+- Demo 0.2.5 has enough physical coherence to become a substrate for more playable scenarios.
+- Low-Energy Routes need time variation to become meaningful inputs for economic pressure.
+- Scenario selection is a better gamified simulator interface than plain scale selection.
+
+### Next Actions
+
+- Choose the first two or three scenarios.
+- Choose the visual metaphor for dynamic Low-Energy Routes.
+- Decide which telemetry fields must feed Demo 0.3.0.
+
+## 2026-07-17 - Version And Direction Cleanup
+
+### Decisions
+
+- Use semantic demo versions in docs and references.
+- Treat `Demo 001`, `Demo 002`, `Demo 002.5`, `Demo 002.6`, and `Demo 003` as old shorthand for `Demo 0.1.0`, `Demo 0.2.0`, `Demo 0.2.5`, `Demo 0.2.6`, and `Demo 0.3.0`.
+- Rename versioned proposal/spec/feedback documents to `docs/demo-<major.minor.patch>-<topic>-<step>.md`.
+- Rename the direction document from a post-0.1.0 note into a continuing project roadmap.
+- Separate Demo 0.2.6 dynamic route/scenario work from Demo 0.3.0 economic pressure work.
+
+### Rationale
+
+- Proposal, spec, and feedback are now versioned artifacts, so filenames should sort and read consistently.
+- The direction document had accumulated later-version material; it needed a version index and clearer boundaries.
+- Demo 0.2.6 is better understood as the route-time/scenario substrate for Demo 0.3.0, not as a hidden subsection of the economy direction.
+
+### Next Actions
+
+- Keep new proposal/spec/feedback docs on the semantic version naming convention.
+- Use `docs/project-directions.md` as the continuing roadmap reference.
+
+## 2026-07-17 - Demo 0.2.6 Implementation Readiness
+
+### Decisions
+
+- The refined Demo 0.2.6 proposal is ready to hand to implementation after being converted into a constrained spec.
+- Accept the three scenario cut: Earth-Moon Gateway Logistics, Earth-Mars Service Corridor, and Lagrange Relay And Volatile Network.
+- Treat scenarios as the primary navigation model; keep scale as focus/camera support.
+- Implement parameterized scenario-normalized energy terrain for Gravity View.
+- Implement stable route-family networks with dynamic availability, waiting, and flow for Low-Energy Routes View.
+- Defer CR3BP, real manifold solving, 3D orbit rendering, and the economic model.
+- Add `docs/demo-0.2.6-dynamic-route-scenarios-spec.md`.
+
+### Rationale
+
+- The proposal now has enough decisions for implementation: scenario count, view/model/claim boundaries, and dynamic route telemetry are all defined.
+- Remaining scientific uncertainty can be safely carried as model labels and future research, rather than blocking 0.2.6.
+- A narrow spec protects implementation from accidentally expanding into CR3BP, 3D, or Demo 0.3.0 economics.
+
+### Next Actions
+
+- Hand Demo 0.2.6 to development using `docs/demo-0.2.6-dynamic-route-scenarios-spec.md`.
+- After implementation, write Demo 0.2.6 feedback comparing the running app against the spec.
+
+## 2026-07-17 - Spec Ownership And Execution Notes
+
+### Decisions
+
+- Planning / Organizer should write implementation-ready specs from proposals and research input.
+- Implementation should read proposal and spec, then execute the accepted cut instead of writing the spec itself.
+- If the spec is unrealistic, implementation should record deviations, blockers, and gaps rather than silently changing the target.
+- Development and operations can temporarily share one working note during early demo work.
+- Implementation / operations may repeat build, test, fix, and retest cycles before producing final feedback.
+
+### Rationale
+
+- Specs are scope-control artifacts, so they fit the organizer role better than the implementation role.
+- Letting implementation invent the spec risks mixing direction-setting with feasibility triage.
+- In early demos, development and UX review are tightly coupled; separating their notes too early adds process without adding clarity.
+
+### Next Actions
+
+- Keep `docs/proposal-workflow.md` as the process source of truth.
+- Let Demo 0.2.6 implementation produce working notes as needed, then final feedback against the spec.

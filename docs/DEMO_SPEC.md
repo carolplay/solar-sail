@@ -1,6 +1,6 @@
-# Demo 000 - Solar Network Viewer
+# Demo 0.0.0 - Solar Network Viewer
 
-Target Version: Demo 000
+Target Version: Demo 0.0.0
 
 ## Goal
 

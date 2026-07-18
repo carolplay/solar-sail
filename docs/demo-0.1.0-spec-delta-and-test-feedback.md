@@ -1,14 +1,14 @@
-# Demo 001 Spec Delta and Test Feedback
+# Demo 0.1.0 Spec Delta and Test Feedback
 
-Target Version: Demo 001
+Target Version: Demo 0.1.0
 
-This note records choices that are outside, narrower than, or more specific than `docs/demo-001-solar-infrastructure-viewer.md`, plus feedback discovered while manually testing the prototype.
+This note records choices that are outside, narrower than, or more specific than `docs/demo-0.1.0-solar-infrastructure-viewer.md`, plus feedback discovered while manually testing the prototype.
 
 ## Out-of-Spec or Scope-Adjusted Choices
 
 ### Deployment Deferred
 
-The spec asks for a public deployment. Demo 001 currently provides local build and preview scripts only:
+The spec asks for a public deployment. Demo 0.1.0 currently provides local build and preview scripts only:
 
 - `npm run build`
 - `npm run preview`
@@ -27,7 +27,7 @@ The model is documented in `docs/physics-engine-research.md`, but it should not 
 
 ### Mercury Was Added
 
-Mercury was added after the initial spec review because the prototype is visually framing the inner system. This is a useful extension, but Mercury is not listed in the original Demo 001 required body set.
+Mercury was added after the initial spec review because the prototype is visually framing the inner system. This is a useful extension, but Mercury is not listed in the original Demo 0.1.0 required body set.
 
 ### Earth-Moon Lagrange Points Reduced
 

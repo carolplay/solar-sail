@@ -2031,7 +2031,7 @@ function currentReviewContext() {
   const targetId = state.reviewTargetId || state.selectedId;
   const info = targetId ? describeObject(targetId) : null;
   return {
-    version: "Demo 002.5",
+    version: "Demo 0.2.5",
     url: window.location.href,
     viewMode: state.viewMode,
     scaleMode: state.scaleMode,
